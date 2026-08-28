@@ -205,6 +205,13 @@ public:
     return false;
   }
 
+  /// Given operand \p OpIdx of \p MI is a PhysReg use, return if it can be
+  /// ignored for the purpose of instruction sinking.
+  virtual bool isSinkableUse(const MachineInstr &MI, unsigned OpIdx) const {
+    return isIgnorableUse(MI, OpIdx);
+  }
+
+  /// Return true if it is safe to sink \p MI into \p SuccToSinkTo.
   virtual bool isSafeToSink(MachineInstr &MI, MachineBasicBlock *SuccToSinkTo,
                             MachineCycleInfo *CI) const {
     return true;

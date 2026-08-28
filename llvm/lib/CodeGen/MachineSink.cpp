@@ -352,9 +352,8 @@ static bool blockPrologueInterferes(const MachineBasicBlock *BB,
       if (!Reg)
         continue;
       if (MO.isUse()) {
-        if (Reg.isPhysical() &&
-            (TII->isIgnorableUse(MI, MI.getOperandNo(&MO)) ||
-             (MRI && MRI->isConstantPhysReg(Reg))))
+        if (Reg.isPhysical() && (TII->isSinkableUse(MI, MI.getOperandNo(&MO)) ||
+                                 (MRI && MRI->isConstantPhysReg(Reg))))
           continue;
         if (PI->modifiesRegister(Reg, TRI))
           return true;
@@ -459,6 +458,8 @@ bool MachineSinking::PerformSinkAndFold(MachineInstr &MI,
       continue;
     }
 
+    // Use more conservative `isIgnorableUse` instead of `isSinkableUse` as the
+    // code below doesn't call `isSafeToSink`.
     if (Reg.isPhysical() && MO.isUse() &&
         (MRI->isConstantPhysReg(Reg) ||
          TII->isIgnorableUse(MI, MI.getOperandNo(&MO))))
@@ -1323,7 +1324,7 @@ bool MachineSinking::isProfitableToSinkTo(Register Reg, MachineInstr &MI,
     if (Reg.isPhysical()) {
       // Don't handle non-constant and non-ignorable physical register uses.
       if (MO.isUse() && !MRI->isConstantPhysReg(Reg) &&
-          !TII->isIgnorableUse(MI, MI.getOperandNo(&MO)))
+          !TII->isSinkableUse(MI, MI.getOperandNo(&MO)))
         return false;
       continue;
     }
@@ -1435,7 +1436,7 @@ MachineSinking::FindSuccToSinkTo(MachineInstr &MI, MachineBasicBlock *MBB,
         // and we can freely move its uses. Alternatively, if it's allocatable,
         // it could get allocated to something with a def during allocation.
         if (!MRI->isConstantPhysReg(Reg) &&
-            !TII->isIgnorableUse(MI, MI.getOperandNo(&MO)))
+            !TII->isSinkableUse(MI, MI.getOperandNo(&MO)))
           return nullptr;
       } else if (!MO.isDead()) {
         // A def that isn't dead. We can't move it.

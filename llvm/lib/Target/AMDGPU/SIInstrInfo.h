@@ -288,6 +288,8 @@ public:
 
   bool isIgnorableUse(const MachineInstr &MI, unsigned OpIdx) const override;
 
+  bool isSinkableUse(const MachineInstr &MI, unsigned OpIdx) const override;
+
   bool isSafeToSink(MachineInstr &MI, MachineBasicBlock *SuccToSinkTo,
                     MachineCycleInfo *CI) const override;
 

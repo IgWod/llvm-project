@@ -303,13 +303,14 @@ bool SIInstrInfo::isSrc1DPPRevOpcode(const GCNSubtarget &ST, uint32_t Opcode) {
   }
 }
 
-// Returns true if the result of a VALU instruction depends on exec.
+// Returns true if the result of an instruction depends on exec.
 bool SIInstrInfo::resultDependsOnExec(const MachineInstr &MI) const {
-  assert(isVALU(MI, /*AllowLDSDMA=*/true));
-
   // If it is convergent it depends on EXEC.
   if (MI.isConvergent())
     return true;
+
+  if (!isVALU(MI, /*AllowLDSDMA=*/true))
+    return false;
 
   // If it defines an SGPR it depends on EXEC, unless it's dead.
   const MachineRegisterInfo &MRI = MI.getMF()->getRegInfo();
@@ -323,6 +324,33 @@ bool SIInstrInfo::resultDependsOnExec(const MachineInstr &MI) const {
   }
 
   return false;
+}
+
+static bool isSinkableLoad(const SIInstrInfo &TII, const MachineInstr &MI) {
+  if (!MI.mayLoad() || MI.mayStore() || MI.isConvergent() ||
+      MI.hasOrderedMemoryRef())
+    return false;
+
+  if (TII.isFLATGlobal(MI))
+    return true;
+
+  // Early return guarded by hasOrderedMemoryRef() guarantees MI.memoperands()
+  // is non-empty.
+  return (TII.isMUBUF(MI) || TII.isMTBUF(MI)) &&
+         llvm::all_of(MI.memoperands(), [](const MachineMemOperand *MMO) {
+           return MMO->isInvariant() && MMO->isDereferenceable();
+         });
+}
+
+bool SIInstrInfo::isSinkableUse(const MachineInstr &MI, unsigned OpIdx) const {
+  const MachineOperand &MO = MI.getOperand(OpIdx);
+  const AMDGPU::MIMGBaseOpcodeInfo *BaseInfo =
+      AMDGPU::getMIMGBaseOpcode(MI.getOpcode());
+  bool IsNonWQMSamplingOp = BaseInfo && BaseInfo->Sampler && !isWQM(MI);
+
+  return MO.getReg() == AMDGPU::EXEC && MO.isImplicit() &&
+         (isVALU(MI, /*AllowLDSDMA=*/true) || IsNonWQMSamplingOp ||
+          isSinkableLoad(*this, MI));
 }
 
 bool SIInstrInfo::isIgnorableUse(const MachineInstr &MI, unsigned OpIdx) const {
@@ -340,6 +368,13 @@ bool SIInstrInfo::isSafeToSink(MachineInstr &MI,
     return true;
 
   MachineRegisterInfo &MRI = MI.getMF()->getRegInfo();
+
+  // TODO: `resultDependsOnExec` check is done outside `isSinkableUse`, so
+  // eventually we can allow sinking of EXEC dependent instruction if we can
+  // prove EXEC is the same at the sinking point.
+  if (resultDependsOnExec(MI) && !MRI.isConstantPhysReg(AMDGPU::EXEC))
+    return false;
+
   // Check if sinking of MI would create temporal divergent use.
   for (auto Op : MI.uses()) {
     if (Op.isReg() && Op.getReg().isVirtual() &&
