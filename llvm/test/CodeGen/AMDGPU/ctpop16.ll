@@ -2243,11 +2243,11 @@ define amdgpu_kernel void @ctpop_i16_in_br(ptr addrspace(1) %out, ptr addrspace(
 ; EG-NEXT:    ALU 0, @25, KC0[CB0:0-32], KC1[]
 ; EG-NEXT:    TEX 0 @16
 ; EG-NEXT:    ALU_POP_AFTER 1, @26, KC0[], KC1[]
-; EG-NEXT:    ALU_PUSH_BEFORE 2, @28, KC0[CB0:0-32], KC1[]
+; EG-NEXT:    ALU_PUSH_BEFORE 1, @28, KC0[], KC1[]
 ; EG-NEXT:    JUMP @11 POP:1
 ; EG-NEXT:    TEX 0 @18
-; EG-NEXT:    ALU_POP_AFTER 0, @31, KC0[], KC1[]
-; EG-NEXT:    ALU 11, @32, KC0[], KC1[]
+; EG-NEXT:    ALU_POP_AFTER 0, @30, KC0[], KC1[]
+; EG-NEXT:    ALU 12, @31, KC0[CB0:0-32], KC1[]
 ; EG-NEXT:    MEM_RAT MSKOR T1.XW, T0.X
 ; EG-NEXT:    CF_END
 ; EG-NEXT:    Fetch clause starting at 14:
@@ -2259,23 +2259,23 @@ define amdgpu_kernel void @ctpop_i16_in_br(ptr addrspace(1) %out, ptr addrspace(
 ; EG-NEXT:    ALU clause starting at 20:
 ; EG-NEXT:     MOV * T0.X, 0.0,
 ; EG-NEXT:    ALU clause starting at 21:
-; EG-NEXT:     MOV T1.W, literal.x,
-; EG-NEXT:     SETNE_INT * T0.W, T1.X, 0.0,
+; EG-NEXT:     MOV T0.W, literal.x,
+; EG-NEXT:     SETNE_INT * T1.W, T1.X, 0.0,
 ; EG-NEXT:    1(1.401298e-45), 0(0.000000e+00)
 ; EG-NEXT:     PRED_SETNE_INT * ExecMask,PredicateBit (MASKED), PS, 0.0,
 ; EG-NEXT:    ALU clause starting at 25:
 ; EG-NEXT:     MOV * T1.X, KC0[2].Z,
 ; EG-NEXT:    ALU clause starting at 26:
-; EG-NEXT:     MOV * T1.W, literal.x,
+; EG-NEXT:     MOV * T0.W, literal.x,
 ; EG-NEXT:    0(0.000000e+00), 0(0.000000e+00)
 ; EG-NEXT:    ALU clause starting at 28:
-; EG-NEXT:     MOV T0.W, KC0[2].Y,
-; EG-NEXT:     SETE_INT * T1.W, T1.W, 0.0,
-; EG-NEXT:     PRED_SETE_INT * ExecMask,PredicateBit (MASKED), PS, 0.0,
-; EG-NEXT:    ALU clause starting at 31:
+; EG-NEXT:     SETE_INT * T0.W, T0.W, 0.0,
+; EG-NEXT:     PRED_SETE_INT * ExecMask,PredicateBit (MASKED), PV.W, 0.0,
+; EG-NEXT:    ALU clause starting at 30:
 ; EG-NEXT:     BCNT_INT * T1.X, T0.X,
-; EG-NEXT:    ALU clause starting at 32:
-; EG-NEXT:     LSHL * T1.W, T0.W, literal.x,
+; EG-NEXT:    ALU clause starting at 31:
+; EG-NEXT:     MOV * T0.W, KC0[2].Y,
+; EG-NEXT:     LSHL * T1.W, PV.W, literal.x,
 ; EG-NEXT:    3(4.203895e-45), 0(0.000000e+00)
 ; EG-NEXT:     AND_INT T1.W, PV.W, literal.x,
 ; EG-NEXT:     AND_INT * T2.W, T1.X, literal.y,

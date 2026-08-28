@@ -293,39 +293,39 @@ define amdgpu_kernel void @xor_cf(ptr addrspace(1) %out, ptr addrspace(1) %in, i
 ; R600-NEXT:    ALU 0, @19, KC0[CB0:0-32], KC1[]
 ; R600-NEXT:    TEX 0 @12
 ; R600-NEXT:    ALU_POP_AFTER 1, @20, KC0[], KC1[]
-; R600-NEXT:    ALU_PUSH_BEFORE 2, @22, KC0[CB0:0-32], KC1[]
+; R600-NEXT:    ALU_PUSH_BEFORE 1, @22, KC0[], KC1[]
 ; R600-NEXT:    JUMP @8 POP:1
-; R600-NEXT:    ALU_POP_AFTER 5, @25, KC0[CB0:0-32], KC1[]
-; R600-NEXT:    ALU 1, @31, KC0[], KC1[]
+; R600-NEXT:    ALU_POP_AFTER 5, @24, KC0[CB0:0-32], KC1[]
+; R600-NEXT:    ALU 2, @30, KC0[CB0:0-32], KC1[]
 ; R600-NEXT:    MEM_RAT_CACHELESS STORE_RAW T0.XY, T1.X, 1
 ; R600-NEXT:    CF_END
 ; R600-NEXT:    PAD
 ; R600-NEXT:    Fetch clause starting at 12:
 ; R600-NEXT:     VTX_READ_64 T0.XY, T0.X, 0, #1
 ; R600-NEXT:    ALU clause starting at 14:
-; R600-NEXT:     OR_INT T0.W, KC0[2].W, KC0[3].X,
-; R600-NEXT:     MOV * T1.W, literal.x,
+; R600-NEXT:     OR_INT T1.W, KC0[2].W, KC0[3].X,
+; R600-NEXT:     MOV * T0.W, literal.x,
 ; R600-NEXT:    1(1.401298e-45), 0(0.000000e+00)
-; R600-NEXT:     SETNE_INT * T0.W, PV.W, 0.0,
+; R600-NEXT:     SETNE_INT * T1.W, PV.W, 0.0,
 ; R600-NEXT:     PRED_SETNE_INT * ExecMask,PredicateBit (MASKED), PV.W, 0.0,
 ; R600-NEXT:    ALU clause starting at 19:
 ; R600-NEXT:     MOV * T0.X, KC0[2].Z,
 ; R600-NEXT:    ALU clause starting at 20:
-; R600-NEXT:     MOV * T1.W, literal.x,
+; R600-NEXT:     MOV * T0.W, literal.x,
 ; R600-NEXT:    0(0.000000e+00), 0(0.000000e+00)
 ; R600-NEXT:    ALU clause starting at 22:
-; R600-NEXT:     MOV T0.W, KC0[2].Y,
-; R600-NEXT:     SETE_INT * T1.W, T1.W, 0.0,
-; R600-NEXT:     PRED_SETE_INT * ExecMask,PredicateBit (MASKED), PS, 0.0,
-; R600-NEXT:    ALU clause starting at 25:
-; R600-NEXT:     MOV T1.W, KC0[2].W,
-; R600-NEXT:     MOV * T2.W, KC0[3].Y,
+; R600-NEXT:     SETE_INT * T0.W, T0.W, 0.0,
+; R600-NEXT:     PRED_SETE_INT * ExecMask,PredicateBit (MASKED), PV.W, 0.0,
+; R600-NEXT:    ALU clause starting at 24:
+; R600-NEXT:     MOV T0.W, KC0[2].W,
+; R600-NEXT:     MOV * T1.W, KC0[3].Y,
 ; R600-NEXT:     XOR_INT T0.X, PV.W, PS,
-; R600-NEXT:     MOV T1.W, KC0[3].X,
-; R600-NEXT:     MOV * T2.W, KC0[3].Z,
+; R600-NEXT:     MOV T0.W, KC0[3].X,
+; R600-NEXT:     MOV * T1.W, KC0[3].Z,
 ; R600-NEXT:     XOR_INT * T0.Y, PV.W, PS,
-; R600-NEXT:    ALU clause starting at 31:
-; R600-NEXT:     LSHR * T1.X, T0.W, literal.x,
+; R600-NEXT:    ALU clause starting at 30:
+; R600-NEXT:     MOV * T0.W, KC0[2].Y,
+; R600-NEXT:     LSHR * T1.X, PV.W, literal.x,
 ; R600-NEXT:    2(2.802597e-45), 0(0.000000e+00)
 entry:
   %0 = icmp eq i64 %a, 0

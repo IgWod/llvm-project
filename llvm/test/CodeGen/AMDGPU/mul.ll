@@ -2995,12 +2995,12 @@ define amdgpu_kernel void @mul32_in_branch(ptr addrspace(1) %out, ptr addrspace(
 ; EG-NEXT:    ALU_PUSH_BEFORE 3, @14, KC0[CB0:0-32], KC1[]
 ; EG-NEXT:    JUMP @3 POP:1
 ; EG-NEXT:    ALU_POP_AFTER 4, @18, KC0[CB0:0-32], KC1[]
-; EG-NEXT:    ALU_PUSH_BEFORE 2, @23, KC0[CB0:0-32], KC1[]
+; EG-NEXT:    ALU_PUSH_BEFORE 1, @23, KC0[], KC1[]
 ; EG-NEXT:    JUMP @8 POP:1
-; EG-NEXT:    ALU 0, @26, KC0[CB0:0-32], KC1[]
+; EG-NEXT:    ALU 0, @25, KC0[CB0:0-32], KC1[]
 ; EG-NEXT:    TEX 0 @12
 ; EG-NEXT:    POP @8 POP:1
-; EG-NEXT:    ALU 1, @27, KC0[], KC1[]
+; EG-NEXT:    ALU 2, @26, KC0[CB0:0-32], KC1[]
 ; EG-NEXT:    MEM_RAT_CACHELESS STORE_RAW T0.X, T1.X, 1
 ; EG-NEXT:    CF_END
 ; EG-NEXT:    PAD
@@ -3018,13 +3018,13 @@ define amdgpu_kernel void @mul32_in_branch(ptr addrspace(1) %out, ptr addrspace(
 ; EG-NEXT:     MULLO_INT * T0.X, PV.W, PS,
 ; EG-NEXT:    0(0.000000e+00), 0(0.000000e+00)
 ; EG-NEXT:    ALU clause starting at 23:
-; EG-NEXT:     MOV T1.W, KC0[2].Y,
 ; EG-NEXT:     SETE_INT * T0.W, T0.W, 0.0,
-; EG-NEXT:     PRED_SETE_INT * ExecMask,PredicateBit (MASKED), PS, 0.0,
-; EG-NEXT:    ALU clause starting at 26:
+; EG-NEXT:     PRED_SETE_INT * ExecMask,PredicateBit (MASKED), PV.W, 0.0,
+; EG-NEXT:    ALU clause starting at 25:
 ; EG-NEXT:     MOV * T0.X, KC0[2].Z,
-; EG-NEXT:    ALU clause starting at 27:
-; EG-NEXT:     LSHR * T1.X, T1.W, literal.x,
+; EG-NEXT:    ALU clause starting at 26:
+; EG-NEXT:     MOV * T0.W, KC0[2].Y,
+; EG-NEXT:     LSHR * T1.X, PV.W, literal.x,
 ; EG-NEXT:    2(2.802597e-45), 0(0.000000e+00)
 entry:
   %0 = icmp eq i32 %a, 0
@@ -3354,44 +3354,44 @@ define amdgpu_kernel void @mul64_in_branch(ptr addrspace(1) %out, ptr addrspace(
 ; EG-NEXT:    ALU_PUSH_BEFORE 4, @14, KC0[CB0:0-32], KC1[]
 ; EG-NEXT:    JUMP @3 POP:1
 ; EG-NEXT:    ALU_POP_AFTER 11, @19, KC0[CB0:0-32], KC1[]
-; EG-NEXT:    ALU_PUSH_BEFORE 2, @31, KC0[CB0:0-32], KC1[]
+; EG-NEXT:    ALU_PUSH_BEFORE 1, @31, KC0[], KC1[]
 ; EG-NEXT:    JUMP @8 POP:1
-; EG-NEXT:    ALU 0, @34, KC0[CB0:0-32], KC1[]
+; EG-NEXT:    ALU 0, @33, KC0[CB0:0-32], KC1[]
 ; EG-NEXT:    TEX 0 @12
 ; EG-NEXT:    POP @8 POP:1
-; EG-NEXT:    ALU 1, @35, KC0[], KC1[]
+; EG-NEXT:    ALU 2, @34, KC0[CB0:0-32], KC1[]
 ; EG-NEXT:    MEM_RAT_CACHELESS STORE_RAW T0.XY, T1.X, 1
 ; EG-NEXT:    CF_END
 ; EG-NEXT:    PAD
 ; EG-NEXT:    Fetch clause starting at 12:
 ; EG-NEXT:     VTX_READ_64 T0.XY, T0.X, 0, #1
 ; EG-NEXT:    ALU clause starting at 14:
-; EG-NEXT:     OR_INT T0.W, KC0[2].W, KC0[3].X,
-; EG-NEXT:     MOV * T1.W, literal.x,
+; EG-NEXT:     OR_INT T1.W, KC0[2].W, KC0[3].X,
+; EG-NEXT:     MOV * T0.W, literal.x,
 ; EG-NEXT:    1(1.401298e-45), 0(0.000000e+00)
-; EG-NEXT:     SETNE_INT * T0.W, PV.W, 0.0,
+; EG-NEXT:     SETNE_INT * T1.W, PV.W, 0.0,
 ; EG-NEXT:     PRED_SETNE_INT * ExecMask,PredicateBit (MASKED), PV.W, 0.0,
 ; EG-NEXT:    ALU clause starting at 19:
-; EG-NEXT:     MOV T0.W, KC0[2].W,
-; EG-NEXT:     MOV * T1.W, KC0[3].Z,
+; EG-NEXT:     MOV T1.W, KC0[2].W,
+; EG-NEXT:     MOV * T0.W, KC0[3].Z,
 ; EG-NEXT:     MOV T2.W, KC0[3].Y,
 ; EG-NEXT:     MULLO_INT * T0.X, PV.W, PS,
-; EG-NEXT:     MOV T1.W, KC0[3].X,
-; EG-NEXT:     MULHI * T0.Y, T0.W, PV.W,
+; EG-NEXT:     MOV T0.W, KC0[3].X,
+; EG-NEXT:     MULHI * T0.Y, T1.W, PV.W,
 ; EG-NEXT:     ADD_INT T3.W, PS, T0.X,
 ; EG-NEXT:     MULLO_INT * T0.X, PV.W, T2.W,
 ; EG-NEXT:     ADD_INT T0.Y, PV.W, PS,
-; EG-NEXT:     MOV T1.W, literal.x,
-; EG-NEXT:     MULLO_INT * T0.X, T0.W, T2.W,
+; EG-NEXT:     MOV T0.W, literal.x,
+; EG-NEXT:     MULLO_INT * T0.X, T1.W, T2.W,
 ; EG-NEXT:    0(0.000000e+00), 0(0.000000e+00)
 ; EG-NEXT:    ALU clause starting at 31:
-; EG-NEXT:     MOV T0.W, KC0[2].Y,
-; EG-NEXT:     SETE_INT * T1.W, T1.W, 0.0,
-; EG-NEXT:     PRED_SETE_INT * ExecMask,PredicateBit (MASKED), PS, 0.0,
-; EG-NEXT:    ALU clause starting at 34:
+; EG-NEXT:     SETE_INT * T0.W, T0.W, 0.0,
+; EG-NEXT:     PRED_SETE_INT * ExecMask,PredicateBit (MASKED), PV.W, 0.0,
+; EG-NEXT:    ALU clause starting at 33:
 ; EG-NEXT:     MOV * T0.X, KC0[2].Z,
-; EG-NEXT:    ALU clause starting at 35:
-; EG-NEXT:     LSHR * T1.X, T0.W, literal.x,
+; EG-NEXT:    ALU clause starting at 34:
+; EG-NEXT:     MOV * T0.W, KC0[2].Y,
+; EG-NEXT:     LSHR * T1.X, PV.W, literal.x,
 ; EG-NEXT:    2(2.802597e-45), 0(0.000000e+00)
 entry:
   %0 = icmp eq i64 %a, 0

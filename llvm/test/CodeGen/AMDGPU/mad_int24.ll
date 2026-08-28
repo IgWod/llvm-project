@@ -213,24 +213,23 @@ define void @mad24_destroyed_knownbits_2(i32 %arg, i32 %arg1, i32 %arg2, ptr add
 ;
 ; RW-LABEL: mad24_destroyed_knownbits_2:
 ; RW:       ; %bb.0: ; %bb
-; RW-NEXT:    ALU 5, @10, KC0[CB0:0-32], KC1[]
+; RW-NEXT:    ALU 4, @10, KC0[CB0:0-32], KC1[]
 ; RW-NEXT:    LOOP_START_DX10 @7
-; RW-NEXT:    ALU_PUSH_BEFORE 30, @16, KC0[], KC1[]
+; RW-NEXT:    ALU_PUSH_BEFORE 30, @15, KC0[], KC1[]
 ; RW-NEXT:    JUMP @6 POP:1
 ; RW-NEXT:    LOOP_BREAK @6
 ; RW-NEXT:    POP @6 POP:1
 ; RW-NEXT:    END_LOOP @2
-; RW-NEXT:    ALU 1, @47, KC0[], KC1[]
+; RW-NEXT:    ALU 2, @46, KC0[CB0:0-32], KC1[]
 ; RW-NEXT:    MEM_RAT_CACHELESS STORE_RAW T0.X, T1.X, 1
 ; RW-NEXT:    CF_END
 ; RW-NEXT:    ALU clause starting at 10:
 ; RW-NEXT:     MOV T0.X, KC0[2].Y,
-; RW-NEXT:     MOV T0.Y, KC0[2].Z,
-; RW-NEXT:     MOV * T0.Z, KC0[2].W,
-; RW-NEXT:     MOV T0.W, KC0[3].X,
+; RW-NEXT:     MOV T0.Z, KC0[2].Z,
+; RW-NEXT:     MOV T0.W, KC0[2].W,
 ; RW-NEXT:     MOV * T1.W, literal.x,
 ; RW-NEXT:    1(1.401298e-45), 0(0.000000e+00)
-; RW-NEXT:    ALU clause starting at 16:
+; RW-NEXT:    ALU clause starting at 15:
 ; RW-NEXT:     LSHL T2.W, T1.W, literal.x,
 ; RW-NEXT:     LSHL * T3.W, T0.X, literal.x,
 ; RW-NEXT:    8(1.121039e-44), 0(0.000000e+00)
@@ -255,81 +254,82 @@ define void @mad24_destroyed_knownbits_2(i32 %arg, i32 %arg1, i32 %arg2, ptr add
 ; RW-NEXT:    8(1.121039e-44), 0(0.000000e+00)
 ; RW-NEXT:     ASHR * T3.W, PV.W, literal.x,
 ; RW-NEXT:    8(1.121039e-44), 0(0.000000e+00)
-; RW-NEXT:     ADD_INT T0.Y, T0.Y, literal.x,
+; RW-NEXT:     ADD_INT T0.Z, T0.Z, literal.x,
 ; RW-NEXT:     MULLO_INT * T0.X, PV.W, T2.W,
 ; RW-NEXT:    -1(nan), 0(0.000000e+00)
 ; RW-NEXT:     ADD_INT T0.X, PS, T1.W,
-; RW-NEXT:     SETE_INT T2.W, PV.Y, 0.0,
-; RW-NEXT:     MOV * T1.W, T0.Z,
+; RW-NEXT:     SETE_INT T2.W, PV.Z, 0.0,
+; RW-NEXT:     MOV * T1.W, T0.W,
 ; RW-NEXT:     PRED_SETNE_INT * ExecMask,PredicateBit (MASKED), PV.W, 0.0,
-; RW-NEXT:    ALU clause starting at 47:
-; RW-NEXT:     LSHR * T1.X, T0.W, literal.x,
+; RW-NEXT:    ALU clause starting at 46:
+; RW-NEXT:     MOV * T0.W, KC0[3].X,
+; RW-NEXT:     LSHR * T1.X, PV.W, literal.x,
 ; RW-NEXT:    2(2.802597e-45), 0(0.000000e+00)
 ;
 ; CM-LABEL: mad24_destroyed_knownbits_2:
 ; CM:       ; %bb.0: ; %bb
-; CM-NEXT:    ALU 5, @10, KC0[CB0:0-32], KC1[]
+; CM-NEXT:    ALU 4, @10, KC0[CB0:0-32], KC1[]
 ; CM-NEXT:    LOOP_START_DX10 @7
-; CM-NEXT:    ALU_PUSH_BEFORE 41, @16, KC0[], KC1[]
+; CM-NEXT:    ALU_PUSH_BEFORE 41, @15, KC0[], KC1[]
 ; CM-NEXT:    JUMP @6 POP:1
 ; CM-NEXT:    LOOP_BREAK @6
 ; CM-NEXT:    POP @6 POP:1
 ; CM-NEXT:    END_LOOP @2
-; CM-NEXT:    ALU 1, @58, KC0[], KC1[]
-; CM-NEXT:    MEM_RAT_CACHELESS STORE_DWORD T1.X, T0.X
+; CM-NEXT:    ALU 2, @57, KC0[CB0:0-32], KC1[]
+; CM-NEXT:    MEM_RAT_CACHELESS STORE_DWORD T0.X, T1.X
 ; CM-NEXT:    CF_END
 ; CM-NEXT:    ALU clause starting at 10:
-; CM-NEXT:     MOV * T1.X, KC0[2].Y,
-; CM-NEXT:     MOV T0.X, KC0[2].Z,
-; CM-NEXT:     MOV T0.Y, KC0[2].W,
-; CM-NEXT:     MOV T0.Z, KC0[3].X,
+; CM-NEXT:     MOV T0.X, KC0[2].Y,
+; CM-NEXT:     MOV T0.Y, KC0[2].Z,
+; CM-NEXT:     MOV T0.Z, KC0[2].W,
 ; CM-NEXT:     MOV * T0.W, literal.x,
 ; CM-NEXT:    1(1.401298e-45), 0(0.000000e+00)
-; CM-NEXT:    ALU clause starting at 16:
+; CM-NEXT:    ALU clause starting at 15:
 ; CM-NEXT:     LSHL T1.Z, T0.W, literal.x,
-; CM-NEXT:     LSHL * T1.W, T1.X, literal.x,
+; CM-NEXT:     LSHL * T1.W, T0.X, literal.x,
 ; CM-NEXT:    8(1.121039e-44), 0(0.000000e+00)
 ; CM-NEXT:     ASHR T2.Z, PV.W, literal.x,
 ; CM-NEXT:     ASHR * T1.W, PV.Z, literal.x,
 ; CM-NEXT:    8(1.121039e-44), 0(0.000000e+00)
-; CM-NEXT:     MULLO_INT T1.X, T2.Z, T1.W,
-; CM-NEXT:     MULLO_INT T1.Y (MASKED), T2.Z, T1.W,
-; CM-NEXT:     MULLO_INT T1.Z (MASKED), T2.Z, T1.W,
-; CM-NEXT:     MULLO_INT * T1.W (MASKED), T2.Z, T1.W,
+; CM-NEXT:     MULLO_INT T0.X, T2.Z, T1.W,
+; CM-NEXT:     MULLO_INT T0.Y (MASKED), T2.Z, T1.W,
+; CM-NEXT:     MULLO_INT T0.Z (MASKED), T2.Z, T1.W,
+; CM-NEXT:     MULLO_INT * T0.W (MASKED), T2.Z, T1.W,
 ; CM-NEXT:     ADD_INT * T0.W, PV.X, T0.W,
 ; CM-NEXT:     LSHL * T2.W, PV.W, literal.x,
 ; CM-NEXT:    8(1.121039e-44), 0(0.000000e+00)
 ; CM-NEXT:     ASHR * T2.W, PV.W, literal.x,
 ; CM-NEXT:    8(1.121039e-44), 0(0.000000e+00)
-; CM-NEXT:     MULLO_INT T1.X, T2.W, T1.W,
-; CM-NEXT:     MULLO_INT T1.Y (MASKED), T2.W, T1.W,
-; CM-NEXT:     MULLO_INT T1.Z (MASKED), T2.W, T1.W,
-; CM-NEXT:     MULLO_INT * T1.W (MASKED), T2.W, T1.W,
+; CM-NEXT:     MULLO_INT T0.X, T2.W, T1.W,
+; CM-NEXT:     MULLO_INT T0.Y (MASKED), T2.W, T1.W,
+; CM-NEXT:     MULLO_INT T0.Z (MASKED), T2.W, T1.W,
+; CM-NEXT:     MULLO_INT * T0.W (MASKED), T2.W, T1.W,
 ; CM-NEXT:     ADD_INT * T0.W, PV.X, T0.W,
 ; CM-NEXT:     LSHL * T1.W, PV.W, literal.x,
 ; CM-NEXT:    8(1.121039e-44), 0(0.000000e+00)
 ; CM-NEXT:     ASHR * T1.W, PV.W, literal.x,
 ; CM-NEXT:    8(1.121039e-44), 0(0.000000e+00)
-; CM-NEXT:     MULLO_INT T1.X, T1.W, T2.W,
-; CM-NEXT:     MULLO_INT T1.Y (MASKED), T1.W, T2.W,
-; CM-NEXT:     MULLO_INT T1.Z (MASKED), T1.W, T2.W,
-; CM-NEXT:     MULLO_INT * T1.W (MASKED), T1.W, T2.W,
+; CM-NEXT:     MULLO_INT T0.X, T1.W, T2.W,
+; CM-NEXT:     MULLO_INT T0.Y (MASKED), T1.W, T2.W,
+; CM-NEXT:     MULLO_INT T0.Z (MASKED), T1.W, T2.W,
+; CM-NEXT:     MULLO_INT * T0.W (MASKED), T1.W, T2.W,
 ; CM-NEXT:     ADD_INT * T0.W, PV.X, T0.W,
 ; CM-NEXT:     LSHL * T2.W, PV.W, literal.x,
 ; CM-NEXT:    8(1.121039e-44), 0(0.000000e+00)
-; CM-NEXT:     ADD_INT T0.X, T0.X, literal.x,
+; CM-NEXT:     ADD_INT T0.Y, T0.Y, literal.x,
 ; CM-NEXT:     ASHR * T2.W, PV.W, literal.y,
 ; CM-NEXT:    -1(nan), 8(1.121039e-44)
-; CM-NEXT:     MULLO_INT T1.X, T2.W, T1.W,
-; CM-NEXT:     MULLO_INT T1.Y (MASKED), T2.W, T1.W,
-; CM-NEXT:     MULLO_INT T1.Z (MASKED), T2.W, T1.W,
-; CM-NEXT:     MULLO_INT * T1.W (MASKED), T2.W, T1.W,
-; CM-NEXT:     ADD_INT T1.X, PV.X, T0.W,
-; CM-NEXT:     SETE_INT T1.Z, T0.X, 0.0,
-; CM-NEXT:     MOV * T0.W, T0.Y,
+; CM-NEXT:     MULLO_INT T0.X, T2.W, T1.W,
+; CM-NEXT:     MULLO_INT T0.Y (MASKED), T2.W, T1.W,
+; CM-NEXT:     MULLO_INT T0.Z (MASKED), T2.W, T1.W,
+; CM-NEXT:     MULLO_INT * T0.W (MASKED), T2.W, T1.W,
+; CM-NEXT:     ADD_INT T0.X, PV.X, T0.W,
+; CM-NEXT:     SETE_INT T1.Z, T0.Y, 0.0,
+; CM-NEXT:     MOV * T0.W, T0.Z,
 ; CM-NEXT:     PRED_SETNE_INT * ExecMask,PredicateBit (MASKED), PV.Z, 0.0,
-; CM-NEXT:    ALU clause starting at 58:
-; CM-NEXT:     LSHR * T0.X, T0.Z, literal.x,
+; CM-NEXT:    ALU clause starting at 57:
+; CM-NEXT:     MOV * T0.W, KC0[3].X,
+; CM-NEXT:     LSHR * T1.X, PV.W, literal.x,
 ; CM-NEXT:    2(2.802597e-45), 0(0.000000e+00)
 bb:
   br label %bb6

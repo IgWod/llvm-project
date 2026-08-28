@@ -46,6 +46,7 @@ class InstrItineraryData;
 class LiveIntervals;
 class LiveVariables;
 class MachineCycleInfo;
+class MachineDominatorTree;
 class MachineLoop;
 class MachineLoopInfo;
 class MachineMemOperand;
@@ -205,14 +206,34 @@ public:
     return false;
   }
 
+  /// Given operand \p OpIdx of \p MI is a PhysReg use, return if it can be
+  /// ignored for the purpose of instruction sinking.
+  virtual bool isSinkableUse(const MachineInstr &MI, unsigned OpIdx) const {
+    return isIgnorableUse(MI, OpIdx);
+  }
+
+  /// Return true if it is safe to sink \p MI into \p SuccToSinkTo.
   virtual bool isSafeToSink(MachineInstr &MI, MachineBasicBlock *SuccToSinkTo,
                             MachineCycleInfo *CI) const {
+    return true;
+  }
+
+  /// Return true if it is profitable to sink \p MI into \p SuccToSinkTo.
+  virtual bool isProfitableToSink(MachineInstr &MI,
+                                  MachineBasicBlock *SuccToSinkTo,
+                                  const MachineDominatorTree *DT) const {
     return true;
   }
 
   /// For a "cheap" instruction which doesn't enable additional sinking,
   /// should MachineSink break a critical edge to sink it anyways?
   virtual bool shouldBreakCriticalEdgeToSink(MachineInstr &MI) const {
+    return false;
+  }
+
+  /// Return true if \p MI unmodeled side effects are known not to include
+  /// reading or writing memory.
+  virtual bool hasNoMemorySideEffects(const MachineInstr &MI) const {
     return false;
   }
 

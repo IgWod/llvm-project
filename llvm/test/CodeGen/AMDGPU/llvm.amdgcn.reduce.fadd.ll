@@ -20,23 +20,24 @@
 define amdgpu_kernel void @uniform_value_half(ptr addrspace(1) %out, half %in) {
 ; GFX8DAGISEL-LABEL: uniform_value_half:
 ; GFX8DAGISEL:       ; %bb.0: ; %entry
-; GFX8DAGISEL-NEXT:    s_load_dword s2, s[4:5], 0x2c
-; GFX8DAGISEL-NEXT:    s_load_dwordx2 s[0:1], s[4:5], 0x24
-; GFX8DAGISEL-NEXT:    s_brev_b32 s4, 1
+; GFX8DAGISEL-NEXT:    s_load_dword s0, s[4:5], 0x2c
+; GFX8DAGISEL-NEXT:    s_brev_b32 s2, 1
 ; GFX8DAGISEL-NEXT:    s_waitcnt lgkmcnt(0)
-; GFX8DAGISEL-NEXT:    v_cvt_f32_f16_e32 v0, s2
-; GFX8DAGISEL-NEXT:    s_mov_b64 s[2:3], exec
+; GFX8DAGISEL-NEXT:    v_cvt_f32_f16_e32 v0, s0
+; GFX8DAGISEL-NEXT:    s_mov_b64 s[0:1], exec
 ; GFX8DAGISEL-NEXT:  .LBB0_1: ; =>This Inner Loop Header: Depth=1
-; GFX8DAGISEL-NEXT:    s_ff1_i32_b64 s5, s[2:3]
-; GFX8DAGISEL-NEXT:    v_readlane_b32 s6, v0, s5
+; GFX8DAGISEL-NEXT:    s_ff1_i32_b64 s3, s[0:1]
+; GFX8DAGISEL-NEXT:    v_readlane_b32 s6, v0, s3
 ; GFX8DAGISEL-NEXT:    v_mov_b32_e32 v1, s6
-; GFX8DAGISEL-NEXT:    s_bitset0_b64 s[2:3], s5
-; GFX8DAGISEL-NEXT:    v_add_f32_e32 v1, s4, v1
-; GFX8DAGISEL-NEXT:    s_cmp_lg_u64 s[2:3], 0
-; GFX8DAGISEL-NEXT:    v_readfirstlane_b32 s4, v1
+; GFX8DAGISEL-NEXT:    s_bitset0_b64 s[0:1], s3
+; GFX8DAGISEL-NEXT:    v_add_f32_e32 v1, s2, v1
+; GFX8DAGISEL-NEXT:    s_cmp_lg_u64 s[0:1], 0
+; GFX8DAGISEL-NEXT:    v_readfirstlane_b32 s2, v1
 ; GFX8DAGISEL-NEXT:    s_cbranch_scc1 .LBB0_1
 ; GFX8DAGISEL-NEXT:  ; %bb.2:
-; GFX8DAGISEL-NEXT:    v_cvt_f16_f32_e32 v2, s4
+; GFX8DAGISEL-NEXT:    s_load_dwordx2 s[0:1], s[4:5], 0x24
+; GFX8DAGISEL-NEXT:    v_cvt_f16_f32_e32 v2, s2
+; GFX8DAGISEL-NEXT:    s_waitcnt lgkmcnt(0)
 ; GFX8DAGISEL-NEXT:    v_mov_b32_e32 v0, s0
 ; GFX8DAGISEL-NEXT:    v_mov_b32_e32 v1, s1
 ; GFX8DAGISEL-NEXT:    flat_store_short v[0:1], v2
@@ -62,25 +63,26 @@ define amdgpu_kernel void @uniform_value_half(ptr addrspace(1) %out, half %in) {
 ;
 ; GFX9DAGISEL-LABEL: uniform_value_half:
 ; GFX9DAGISEL:       ; %bb.0: ; %entry
-; GFX9DAGISEL-NEXT:    s_load_dword s2, s[4:5], 0x2c
-; GFX9DAGISEL-NEXT:    s_load_dwordx2 s[0:1], s[4:5], 0x24
-; GFX9DAGISEL-NEXT:    v_mov_b32_e32 v0, 0
-; GFX9DAGISEL-NEXT:    s_brev_b32 s4, 1
+; GFX9DAGISEL-NEXT:    s_load_dword s0, s[4:5], 0x2c
+; GFX9DAGISEL-NEXT:    s_brev_b32 s2, 1
 ; GFX9DAGISEL-NEXT:    s_waitcnt lgkmcnt(0)
-; GFX9DAGISEL-NEXT:    v_cvt_f32_f16_e32 v1, s2
-; GFX9DAGISEL-NEXT:    s_mov_b64 s[2:3], exec
+; GFX9DAGISEL-NEXT:    v_cvt_f32_f16_e32 v0, s0
+; GFX9DAGISEL-NEXT:    s_mov_b64 s[0:1], exec
 ; GFX9DAGISEL-NEXT:  .LBB0_1: ; =>This Inner Loop Header: Depth=1
-; GFX9DAGISEL-NEXT:    s_ff1_i32_b64 s5, s[2:3]
-; GFX9DAGISEL-NEXT:    v_readlane_b32 s6, v1, s5
-; GFX9DAGISEL-NEXT:    v_mov_b32_e32 v2, s6
-; GFX9DAGISEL-NEXT:    s_bitset0_b64 s[2:3], s5
-; GFX9DAGISEL-NEXT:    v_add_f32_e32 v2, s4, v2
-; GFX9DAGISEL-NEXT:    s_cmp_lg_u64 s[2:3], 0
-; GFX9DAGISEL-NEXT:    v_readfirstlane_b32 s4, v2
+; GFX9DAGISEL-NEXT:    s_ff1_i32_b64 s3, s[0:1]
+; GFX9DAGISEL-NEXT:    v_readlane_b32 s6, v0, s3
+; GFX9DAGISEL-NEXT:    v_mov_b32_e32 v1, s6
+; GFX9DAGISEL-NEXT:    s_bitset0_b64 s[0:1], s3
+; GFX9DAGISEL-NEXT:    v_add_f32_e32 v1, s2, v1
+; GFX9DAGISEL-NEXT:    s_cmp_lg_u64 s[0:1], 0
+; GFX9DAGISEL-NEXT:    v_readfirstlane_b32 s2, v1
 ; GFX9DAGISEL-NEXT:    s_cbranch_scc1 .LBB0_1
 ; GFX9DAGISEL-NEXT:  ; %bb.2:
-; GFX9DAGISEL-NEXT:    v_cvt_f16_f32_e32 v1, s4
-; GFX9DAGISEL-NEXT:    global_store_short v0, v1, s[0:1]
+; GFX9DAGISEL-NEXT:    s_load_dwordx2 s[0:1], s[4:5], 0x24
+; GFX9DAGISEL-NEXT:    v_cvt_f16_f32_e32 v0, s2
+; GFX9DAGISEL-NEXT:    v_mov_b32_e32 v1, 0
+; GFX9DAGISEL-NEXT:    s_waitcnt lgkmcnt(0)
+; GFX9DAGISEL-NEXT:    global_store_short v1, v0, s[0:1]
 ; GFX9DAGISEL-NEXT:    s_endpgm
 ;
 ; GFX9GISEL-LABEL: uniform_value_half:
@@ -102,24 +104,24 @@ define amdgpu_kernel void @uniform_value_half(ptr addrspace(1) %out, half %in) {
 ;
 ; GFX1064DAGISEL-LABEL: uniform_value_half:
 ; GFX1064DAGISEL:       ; %bb.0: ; %entry
-; GFX1064DAGISEL-NEXT:    s_clause 0x1
-; GFX1064DAGISEL-NEXT:    s_load_dword s2, s[4:5], 0x2c
-; GFX1064DAGISEL-NEXT:    s_load_dwordx2 s[0:1], s[4:5], 0x24
-; GFX1064DAGISEL-NEXT:    v_mov_b32_e32 v0, 0
-; GFX1064DAGISEL-NEXT:    s_brev_b32 s4, 1
+; GFX1064DAGISEL-NEXT:    s_load_dword s0, s[4:5], 0x2c
+; GFX1064DAGISEL-NEXT:    s_brev_b32 s2, 1
 ; GFX1064DAGISEL-NEXT:    s_waitcnt lgkmcnt(0)
-; GFX1064DAGISEL-NEXT:    v_cvt_f32_f16_e32 v1, s2
-; GFX1064DAGISEL-NEXT:    s_mov_b64 s[2:3], exec
+; GFX1064DAGISEL-NEXT:    v_cvt_f32_f16_e32 v0, s0
+; GFX1064DAGISEL-NEXT:    s_mov_b64 s[0:1], exec
 ; GFX1064DAGISEL-NEXT:  .LBB0_1: ; =>This Inner Loop Header: Depth=1
-; GFX1064DAGISEL-NEXT:    s_ff1_i32_b64 s5, s[2:3]
-; GFX1064DAGISEL-NEXT:    v_readlane_b32 s6, v1, s5
-; GFX1064DAGISEL-NEXT:    s_bitset0_b64 s[2:3], s5
-; GFX1064DAGISEL-NEXT:    s_cmp_lg_u64 s[2:3], 0
-; GFX1064DAGISEL-NEXT:    v_add_f32_e64 v2, s4, s6
-; GFX1064DAGISEL-NEXT:    v_readfirstlane_b32 s4, v2
+; GFX1064DAGISEL-NEXT:    s_ff1_i32_b64 s3, s[0:1]
+; GFX1064DAGISEL-NEXT:    v_readlane_b32 s6, v0, s3
+; GFX1064DAGISEL-NEXT:    s_bitset0_b64 s[0:1], s3
+; GFX1064DAGISEL-NEXT:    s_cmp_lg_u64 s[0:1], 0
+; GFX1064DAGISEL-NEXT:    v_add_f32_e64 v1, s2, s6
+; GFX1064DAGISEL-NEXT:    v_readfirstlane_b32 s2, v1
 ; GFX1064DAGISEL-NEXT:    s_cbranch_scc1 .LBB0_1
 ; GFX1064DAGISEL-NEXT:  ; %bb.2:
-; GFX1064DAGISEL-NEXT:    v_cvt_f16_f32_e32 v1, s4
+; GFX1064DAGISEL-NEXT:    s_load_dwordx2 s[0:1], s[4:5], 0x24
+; GFX1064DAGISEL-NEXT:    v_mov_b32_e32 v0, 0
+; GFX1064DAGISEL-NEXT:    v_cvt_f16_f32_e32 v1, s2
+; GFX1064DAGISEL-NEXT:    s_waitcnt lgkmcnt(0)
 ; GFX1064DAGISEL-NEXT:    global_store_short v0, v1, s[0:1]
 ; GFX1064DAGISEL-NEXT:    s_endpgm
 ;
@@ -142,25 +144,25 @@ define amdgpu_kernel void @uniform_value_half(ptr addrspace(1) %out, half %in) {
 ;
 ; GFX1032DAGISEL-LABEL: uniform_value_half:
 ; GFX1032DAGISEL:       ; %bb.0: ; %entry
-; GFX1032DAGISEL-NEXT:    s_clause 0x1
-; GFX1032DAGISEL-NEXT:    s_load_dword s2, s[4:5], 0x2c
-; GFX1032DAGISEL-NEXT:    s_load_dwordx2 s[0:1], s[4:5], 0x24
-; GFX1032DAGISEL-NEXT:    v_mov_b32_e32 v0, 0
-; GFX1032DAGISEL-NEXT:    s_brev_b32 s3, 1
+; GFX1032DAGISEL-NEXT:    s_load_dword s0, s[4:5], 0x2c
+; GFX1032DAGISEL-NEXT:    s_brev_b32 s1, 1
 ; GFX1032DAGISEL-NEXT:    s_waitcnt lgkmcnt(0)
-; GFX1032DAGISEL-NEXT:    v_cvt_f32_f16_e32 v1, s2
-; GFX1032DAGISEL-NEXT:    s_mov_b32 s2, exec_lo
+; GFX1032DAGISEL-NEXT:    v_cvt_f32_f16_e32 v0, s0
+; GFX1032DAGISEL-NEXT:    s_mov_b32 s0, exec_lo
 ; GFX1032DAGISEL-NEXT:  .LBB0_1: ; =>This Inner Loop Header: Depth=1
-; GFX1032DAGISEL-NEXT:    s_ff1_i32_b32 s4, s2
-; GFX1032DAGISEL-NEXT:    v_readlane_b32 s5, v1, s4
-; GFX1032DAGISEL-NEXT:    s_bitset0_b32 s2, s4
-; GFX1032DAGISEL-NEXT:    s_cmp_lg_u32 s2, 0
-; GFX1032DAGISEL-NEXT:    v_add_f32_e64 v2, s3, s5
-; GFX1032DAGISEL-NEXT:    v_readfirstlane_b32 s3, v2
+; GFX1032DAGISEL-NEXT:    s_ff1_i32_b32 s2, s0
+; GFX1032DAGISEL-NEXT:    v_readlane_b32 s3, v0, s2
+; GFX1032DAGISEL-NEXT:    s_bitset0_b32 s0, s2
+; GFX1032DAGISEL-NEXT:    s_cmp_lg_u32 s0, 0
+; GFX1032DAGISEL-NEXT:    v_add_f32_e64 v1, s1, s3
+; GFX1032DAGISEL-NEXT:    v_readfirstlane_b32 s1, v1
 ; GFX1032DAGISEL-NEXT:    s_cbranch_scc1 .LBB0_1
 ; GFX1032DAGISEL-NEXT:  ; %bb.2:
-; GFX1032DAGISEL-NEXT:    v_cvt_f16_f32_e32 v1, s3
-; GFX1032DAGISEL-NEXT:    global_store_short v0, v1, s[0:1]
+; GFX1032DAGISEL-NEXT:    s_load_dwordx2 s[2:3], s[4:5], 0x24
+; GFX1032DAGISEL-NEXT:    v_mov_b32_e32 v0, 0
+; GFX1032DAGISEL-NEXT:    v_cvt_f16_f32_e32 v1, s1
+; GFX1032DAGISEL-NEXT:    s_waitcnt lgkmcnt(0)
+; GFX1032DAGISEL-NEXT:    global_store_short v0, v1, s[2:3]
 ; GFX1032DAGISEL-NEXT:    s_endpgm
 ;
 ; GFX1032GISEL-LABEL: uniform_value_half:
@@ -183,27 +185,27 @@ define amdgpu_kernel void @uniform_value_half(ptr addrspace(1) %out, half %in) {
 ;
 ; GFX1164DAGISEL-FAKE16-LABEL: uniform_value_half:
 ; GFX1164DAGISEL-FAKE16:       ; %bb.0: ; %entry
-; GFX1164DAGISEL-FAKE16-NEXT:    s_clause 0x1
-; GFX1164DAGISEL-FAKE16-NEXT:    s_load_b32 s2, s[4:5], 0x2c
-; GFX1164DAGISEL-FAKE16-NEXT:    s_load_b64 s[0:1], s[4:5], 0x24
-; GFX1164DAGISEL-FAKE16-NEXT:    v_mov_b32_e32 v0, 0
-; GFX1164DAGISEL-FAKE16-NEXT:    s_brev_b32 s4, 1
+; GFX1164DAGISEL-FAKE16-NEXT:    s_load_b32 s0, s[4:5], 0x2c
+; GFX1164DAGISEL-FAKE16-NEXT:    s_brev_b32 s2, 1
 ; GFX1164DAGISEL-FAKE16-NEXT:    s_waitcnt lgkmcnt(0)
-; GFX1164DAGISEL-FAKE16-NEXT:    v_cvt_f32_f16_e32 v1, s2
-; GFX1164DAGISEL-FAKE16-NEXT:    s_mov_b64 s[2:3], exec
+; GFX1164DAGISEL-FAKE16-NEXT:    v_cvt_f32_f16_e32 v0, s0
+; GFX1164DAGISEL-FAKE16-NEXT:    s_mov_b64 s[0:1], exec
 ; GFX1164DAGISEL-FAKE16-NEXT:  .LBB0_1: ; =>This Inner Loop Header: Depth=1
 ; GFX1164DAGISEL-FAKE16-NEXT:    s_delay_alu instid0(SALU_CYCLE_1)
-; GFX1164DAGISEL-FAKE16-NEXT:    s_ctz_i32_b64 s5, s[2:3]
+; GFX1164DAGISEL-FAKE16-NEXT:    s_ctz_i32_b64 s3, s[0:1]
 ; GFX1164DAGISEL-FAKE16-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instid1(SALU_CYCLE_1)
-; GFX1164DAGISEL-FAKE16-NEXT:    v_readlane_b32 s6, v1, s5
-; GFX1164DAGISEL-FAKE16-NEXT:    s_bitset0_b64 s[2:3], s5
+; GFX1164DAGISEL-FAKE16-NEXT:    v_readlane_b32 s6, v0, s3
+; GFX1164DAGISEL-FAKE16-NEXT:    s_bitset0_b64 s[0:1], s3
 ; GFX1164DAGISEL-FAKE16-NEXT:    s_delay_alu instid0(SALU_CYCLE_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-; GFX1164DAGISEL-FAKE16-NEXT:    s_cmp_lg_u64 s[2:3], 0
-; GFX1164DAGISEL-FAKE16-NEXT:    v_add_f32_e64 v2, s4, s6
-; GFX1164DAGISEL-FAKE16-NEXT:    v_readfirstlane_b32 s4, v2
+; GFX1164DAGISEL-FAKE16-NEXT:    s_cmp_lg_u64 s[0:1], 0
+; GFX1164DAGISEL-FAKE16-NEXT:    v_add_f32_e64 v1, s2, s6
+; GFX1164DAGISEL-FAKE16-NEXT:    v_readfirstlane_b32 s2, v1
 ; GFX1164DAGISEL-FAKE16-NEXT:    s_cbranch_scc1 .LBB0_1
 ; GFX1164DAGISEL-FAKE16-NEXT:  ; %bb.2:
-; GFX1164DAGISEL-FAKE16-NEXT:    v_cvt_f16_f32_e32 v1, s4
+; GFX1164DAGISEL-FAKE16-NEXT:    s_load_b64 s[0:1], s[4:5], 0x24
+; GFX1164DAGISEL-FAKE16-NEXT:    v_mov_b32_e32 v0, 0
+; GFX1164DAGISEL-FAKE16-NEXT:    v_cvt_f16_f32_e32 v1, s2
+; GFX1164DAGISEL-FAKE16-NEXT:    s_waitcnt lgkmcnt(0)
 ; GFX1164DAGISEL-FAKE16-NEXT:    global_store_b16 v0, v1, s[0:1]
 ; GFX1164DAGISEL-FAKE16-NEXT:    s_endpgm
 ;
@@ -229,28 +231,28 @@ define amdgpu_kernel void @uniform_value_half(ptr addrspace(1) %out, half %in) {
 ;
 ; GFX1132DAGISEL-FAKE16-LABEL: uniform_value_half:
 ; GFX1132DAGISEL-FAKE16:       ; %bb.0: ; %entry
-; GFX1132DAGISEL-FAKE16-NEXT:    s_clause 0x1
-; GFX1132DAGISEL-FAKE16-NEXT:    s_load_b32 s2, s[4:5], 0x2c
-; GFX1132DAGISEL-FAKE16-NEXT:    s_load_b64 s[0:1], s[4:5], 0x24
-; GFX1132DAGISEL-FAKE16-NEXT:    v_mov_b32_e32 v0, 0
-; GFX1132DAGISEL-FAKE16-NEXT:    s_brev_b32 s3, 1
+; GFX1132DAGISEL-FAKE16-NEXT:    s_load_b32 s0, s[4:5], 0x2c
+; GFX1132DAGISEL-FAKE16-NEXT:    s_brev_b32 s1, 1
 ; GFX1132DAGISEL-FAKE16-NEXT:    s_waitcnt lgkmcnt(0)
-; GFX1132DAGISEL-FAKE16-NEXT:    v_cvt_f32_f16_e32 v1, s2
-; GFX1132DAGISEL-FAKE16-NEXT:    s_mov_b32 s2, exec_lo
+; GFX1132DAGISEL-FAKE16-NEXT:    v_cvt_f32_f16_e32 v0, s0
+; GFX1132DAGISEL-FAKE16-NEXT:    s_mov_b32 s0, exec_lo
 ; GFX1132DAGISEL-FAKE16-NEXT:  .LBB0_1: ; =>This Inner Loop Header: Depth=1
 ; GFX1132DAGISEL-FAKE16-NEXT:    s_delay_alu instid0(SALU_CYCLE_1)
-; GFX1132DAGISEL-FAKE16-NEXT:    s_ctz_i32_b32 s4, s2
+; GFX1132DAGISEL-FAKE16-NEXT:    s_ctz_i32_b32 s2, s0
 ; GFX1132DAGISEL-FAKE16-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instid1(SALU_CYCLE_1)
-; GFX1132DAGISEL-FAKE16-NEXT:    v_readlane_b32 s5, v1, s4
-; GFX1132DAGISEL-FAKE16-NEXT:    s_bitset0_b32 s2, s4
+; GFX1132DAGISEL-FAKE16-NEXT:    v_readlane_b32 s3, v0, s2
+; GFX1132DAGISEL-FAKE16-NEXT:    s_bitset0_b32 s0, s2
 ; GFX1132DAGISEL-FAKE16-NEXT:    s_delay_alu instid0(SALU_CYCLE_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-; GFX1132DAGISEL-FAKE16-NEXT:    s_cmp_lg_u32 s2, 0
-; GFX1132DAGISEL-FAKE16-NEXT:    v_add_f32_e64 v2, s3, s5
-; GFX1132DAGISEL-FAKE16-NEXT:    v_readfirstlane_b32 s3, v2
+; GFX1132DAGISEL-FAKE16-NEXT:    s_cmp_lg_u32 s0, 0
+; GFX1132DAGISEL-FAKE16-NEXT:    v_add_f32_e64 v1, s1, s3
+; GFX1132DAGISEL-FAKE16-NEXT:    v_readfirstlane_b32 s1, v1
 ; GFX1132DAGISEL-FAKE16-NEXT:    s_cbranch_scc1 .LBB0_1
 ; GFX1132DAGISEL-FAKE16-NEXT:  ; %bb.2:
-; GFX1132DAGISEL-FAKE16-NEXT:    v_cvt_f16_f32_e32 v1, s3
-; GFX1132DAGISEL-FAKE16-NEXT:    global_store_b16 v0, v1, s[0:1]
+; GFX1132DAGISEL-FAKE16-NEXT:    s_load_b64 s[2:3], s[4:5], 0x24
+; GFX1132DAGISEL-FAKE16-NEXT:    v_mov_b32_e32 v0, 0
+; GFX1132DAGISEL-FAKE16-NEXT:    v_cvt_f16_f32_e32 v1, s1
+; GFX1132DAGISEL-FAKE16-NEXT:    s_waitcnt lgkmcnt(0)
+; GFX1132DAGISEL-FAKE16-NEXT:    global_store_b16 v0, v1, s[2:3]
 ; GFX1132DAGISEL-FAKE16-NEXT:    s_endpgm
 ;
 ; GFX1132GISEL-FAKE16-LABEL: uniform_value_half:
@@ -275,28 +277,28 @@ define amdgpu_kernel void @uniform_value_half(ptr addrspace(1) %out, half %in) {
 ;
 ; GFX1164DAGISEL-TRUE16-LABEL: uniform_value_half:
 ; GFX1164DAGISEL-TRUE16:       ; %bb.0: ; %entry
-; GFX1164DAGISEL-TRUE16-NEXT:    s_clause 0x1
-; GFX1164DAGISEL-TRUE16-NEXT:    s_load_b32 s2, s[4:5], 0x2c
-; GFX1164DAGISEL-TRUE16-NEXT:    s_load_b64 s[0:1], s[4:5], 0x24
-; GFX1164DAGISEL-TRUE16-NEXT:    v_mov_b32_e32 v0, 0
-; GFX1164DAGISEL-TRUE16-NEXT:    s_brev_b32 s4, 1
+; GFX1164DAGISEL-TRUE16-NEXT:    s_load_b32 s0, s[4:5], 0x2c
+; GFX1164DAGISEL-TRUE16-NEXT:    s_brev_b32 s2, 1
 ; GFX1164DAGISEL-TRUE16-NEXT:    s_waitcnt lgkmcnt(0)
-; GFX1164DAGISEL-TRUE16-NEXT:    v_cvt_f32_f16_e32 v1, s2
-; GFX1164DAGISEL-TRUE16-NEXT:    s_mov_b64 s[2:3], exec
+; GFX1164DAGISEL-TRUE16-NEXT:    v_cvt_f32_f16_e32 v0, s0
+; GFX1164DAGISEL-TRUE16-NEXT:    s_mov_b64 s[0:1], exec
 ; GFX1164DAGISEL-TRUE16-NEXT:  .LBB0_1: ; =>This Inner Loop Header: Depth=1
 ; GFX1164DAGISEL-TRUE16-NEXT:    s_delay_alu instid0(SALU_CYCLE_1)
-; GFX1164DAGISEL-TRUE16-NEXT:    s_ctz_i32_b64 s5, s[2:3]
+; GFX1164DAGISEL-TRUE16-NEXT:    s_ctz_i32_b64 s3, s[0:1]
 ; GFX1164DAGISEL-TRUE16-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instid1(SALU_CYCLE_1)
-; GFX1164DAGISEL-TRUE16-NEXT:    v_readlane_b32 s6, v1, s5
-; GFX1164DAGISEL-TRUE16-NEXT:    s_bitset0_b64 s[2:3], s5
+; GFX1164DAGISEL-TRUE16-NEXT:    v_readlane_b32 s6, v0, s3
+; GFX1164DAGISEL-TRUE16-NEXT:    s_bitset0_b64 s[0:1], s3
 ; GFX1164DAGISEL-TRUE16-NEXT:    s_delay_alu instid0(SALU_CYCLE_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-; GFX1164DAGISEL-TRUE16-NEXT:    s_cmp_lg_u64 s[2:3], 0
-; GFX1164DAGISEL-TRUE16-NEXT:    v_add_f32_e64 v2, s4, s6
-; GFX1164DAGISEL-TRUE16-NEXT:    v_readfirstlane_b32 s4, v2
+; GFX1164DAGISEL-TRUE16-NEXT:    s_cmp_lg_u64 s[0:1], 0
+; GFX1164DAGISEL-TRUE16-NEXT:    v_add_f32_e64 v1, s2, s6
+; GFX1164DAGISEL-TRUE16-NEXT:    v_readfirstlane_b32 s2, v1
 ; GFX1164DAGISEL-TRUE16-NEXT:    s_cbranch_scc1 .LBB0_1
 ; GFX1164DAGISEL-TRUE16-NEXT:  ; %bb.2:
-; GFX1164DAGISEL-TRUE16-NEXT:    v_cvt_f16_f32_e32 v1.l, s4
-; GFX1164DAGISEL-TRUE16-NEXT:    global_store_b16 v0, v1, s[0:1]
+; GFX1164DAGISEL-TRUE16-NEXT:    s_load_b64 s[0:1], s[4:5], 0x24
+; GFX1164DAGISEL-TRUE16-NEXT:    v_mov_b32_e32 v1, 0
+; GFX1164DAGISEL-TRUE16-NEXT:    v_cvt_f16_f32_e32 v0.l, s2
+; GFX1164DAGISEL-TRUE16-NEXT:    s_waitcnt lgkmcnt(0)
+; GFX1164DAGISEL-TRUE16-NEXT:    global_store_b16 v1, v0, s[0:1]
 ; GFX1164DAGISEL-TRUE16-NEXT:    s_endpgm
 ;
 ; GFX1164GISEL-TRUE16-LABEL: uniform_value_half:
@@ -321,28 +323,28 @@ define amdgpu_kernel void @uniform_value_half(ptr addrspace(1) %out, half %in) {
 ;
 ; GFX1132DAGISEL-TRUE16-LABEL: uniform_value_half:
 ; GFX1132DAGISEL-TRUE16:       ; %bb.0: ; %entry
-; GFX1132DAGISEL-TRUE16-NEXT:    s_clause 0x1
-; GFX1132DAGISEL-TRUE16-NEXT:    s_load_b32 s2, s[4:5], 0x2c
-; GFX1132DAGISEL-TRUE16-NEXT:    s_load_b64 s[0:1], s[4:5], 0x24
-; GFX1132DAGISEL-TRUE16-NEXT:    v_mov_b32_e32 v0, 0
-; GFX1132DAGISEL-TRUE16-NEXT:    s_brev_b32 s3, 1
+; GFX1132DAGISEL-TRUE16-NEXT:    s_load_b32 s0, s[4:5], 0x2c
+; GFX1132DAGISEL-TRUE16-NEXT:    s_brev_b32 s1, 1
 ; GFX1132DAGISEL-TRUE16-NEXT:    s_waitcnt lgkmcnt(0)
-; GFX1132DAGISEL-TRUE16-NEXT:    v_cvt_f32_f16_e32 v1, s2
-; GFX1132DAGISEL-TRUE16-NEXT:    s_mov_b32 s2, exec_lo
+; GFX1132DAGISEL-TRUE16-NEXT:    v_cvt_f32_f16_e32 v0, s0
+; GFX1132DAGISEL-TRUE16-NEXT:    s_mov_b32 s0, exec_lo
 ; GFX1132DAGISEL-TRUE16-NEXT:  .LBB0_1: ; =>This Inner Loop Header: Depth=1
 ; GFX1132DAGISEL-TRUE16-NEXT:    s_delay_alu instid0(SALU_CYCLE_1)
-; GFX1132DAGISEL-TRUE16-NEXT:    s_ctz_i32_b32 s4, s2
+; GFX1132DAGISEL-TRUE16-NEXT:    s_ctz_i32_b32 s2, s0
 ; GFX1132DAGISEL-TRUE16-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instid1(SALU_CYCLE_1)
-; GFX1132DAGISEL-TRUE16-NEXT:    v_readlane_b32 s5, v1, s4
-; GFX1132DAGISEL-TRUE16-NEXT:    s_bitset0_b32 s2, s4
+; GFX1132DAGISEL-TRUE16-NEXT:    v_readlane_b32 s3, v0, s2
+; GFX1132DAGISEL-TRUE16-NEXT:    s_bitset0_b32 s0, s2
 ; GFX1132DAGISEL-TRUE16-NEXT:    s_delay_alu instid0(SALU_CYCLE_1) | instskip(SKIP_1) | instid1(VALU_DEP_1)
-; GFX1132DAGISEL-TRUE16-NEXT:    s_cmp_lg_u32 s2, 0
-; GFX1132DAGISEL-TRUE16-NEXT:    v_add_f32_e64 v2, s3, s5
-; GFX1132DAGISEL-TRUE16-NEXT:    v_readfirstlane_b32 s3, v2
+; GFX1132DAGISEL-TRUE16-NEXT:    s_cmp_lg_u32 s0, 0
+; GFX1132DAGISEL-TRUE16-NEXT:    v_add_f32_e64 v1, s1, s3
+; GFX1132DAGISEL-TRUE16-NEXT:    v_readfirstlane_b32 s1, v1
 ; GFX1132DAGISEL-TRUE16-NEXT:    s_cbranch_scc1 .LBB0_1
 ; GFX1132DAGISEL-TRUE16-NEXT:  ; %bb.2:
-; GFX1132DAGISEL-TRUE16-NEXT:    v_cvt_f16_f32_e32 v1.l, s3
-; GFX1132DAGISEL-TRUE16-NEXT:    global_store_b16 v0, v1, s[0:1]
+; GFX1132DAGISEL-TRUE16-NEXT:    s_load_b64 s[2:3], s[4:5], 0x24
+; GFX1132DAGISEL-TRUE16-NEXT:    v_mov_b32_e32 v1, 0
+; GFX1132DAGISEL-TRUE16-NEXT:    v_cvt_f16_f32_e32 v0.l, s1
+; GFX1132DAGISEL-TRUE16-NEXT:    s_waitcnt lgkmcnt(0)
+; GFX1132DAGISEL-TRUE16-NEXT:    global_store_b16 v1, v0, s[2:3]
 ; GFX1132DAGISEL-TRUE16-NEXT:    s_endpgm
 ;
 ; GFX1132GISEL-TRUE16-LABEL: uniform_value_half:

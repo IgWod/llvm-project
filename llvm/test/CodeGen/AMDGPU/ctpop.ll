@@ -1705,10 +1705,10 @@ define amdgpu_kernel void @ctpop_i32_in_br(ptr addrspace(1) %out, ptr addrspace(
 ; EG-NEXT:    ALU 0, @18, KC0[CB0:0-32], KC1[]
 ; EG-NEXT:    TEX 0 @12
 ; EG-NEXT:    ALU_POP_AFTER 1, @19, KC0[], KC1[]
-; EG-NEXT:    ALU_PUSH_BEFORE 2, @21, KC0[CB0:0-32], KC1[]
+; EG-NEXT:    ALU_PUSH_BEFORE 1, @21, KC0[], KC1[]
 ; EG-NEXT:    JUMP @8 POP:1
-; EG-NEXT:    ALU_POP_AFTER 1, @24, KC0[CB0:0-32], KC1[]
-; EG-NEXT:    ALU 1, @26, KC0[], KC1[]
+; EG-NEXT:    ALU_POP_AFTER 1, @23, KC0[CB0:0-32], KC1[]
+; EG-NEXT:    ALU 2, @25, KC0[CB0:0-32], KC1[]
 ; EG-NEXT:    MEM_RAT_CACHELESS STORE_RAW T0.X, T1.X, 1
 ; EG-NEXT:    CF_END
 ; EG-NEXT:    PAD
@@ -1725,14 +1725,14 @@ define amdgpu_kernel void @ctpop_i32_in_br(ptr addrspace(1) %out, ptr addrspace(
 ; EG-NEXT:     MOV * T0.W, literal.x,
 ; EG-NEXT:    0(0.000000e+00), 0(0.000000e+00)
 ; EG-NEXT:    ALU clause starting at 21:
-; EG-NEXT:     MOV T1.W, KC0[2].Y,
 ; EG-NEXT:     SETE_INT * T0.W, T0.W, 0.0,
-; EG-NEXT:     PRED_SETE_INT * ExecMask,PredicateBit (MASKED), PS, 0.0,
-; EG-NEXT:    ALU clause starting at 24:
+; EG-NEXT:     PRED_SETE_INT * ExecMask,PredicateBit (MASKED), PV.W, 0.0,
+; EG-NEXT:    ALU clause starting at 23:
 ; EG-NEXT:     MOV * T0.W, KC0[2].W,
 ; EG-NEXT:     BCNT_INT * T0.X, PV.W,
-; EG-NEXT:    ALU clause starting at 26:
-; EG-NEXT:     LSHR * T1.X, T1.W, literal.x,
+; EG-NEXT:    ALU clause starting at 25:
+; EG-NEXT:     MOV * T0.W, KC0[2].Y,
+; EG-NEXT:     LSHR * T1.X, PV.W, literal.x,
 ; EG-NEXT:    2(2.802597e-45), 0(0.000000e+00)
 ;
 ; SI-GISEL-LABEL: ctpop_i32_in_br:

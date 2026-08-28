@@ -305,11 +305,12 @@ bool SIInstrInfo::isSrc1DPPRevOpcode(const GCNSubtarget &ST, uint32_t Opcode) {
 
 // Returns true if the result of a VALU instruction depends on exec.
 bool SIInstrInfo::resultDependsOnExec(const MachineInstr &MI) const {
-  assert(isVALU(MI, /*AllowLDSDMA=*/true));
-
   // If it is convergent it depends on EXEC.
   if (MI.isConvergent())
     return true;
+
+  if (!isVALU(MI, /*AllowLDSDMA=*/true))
+    return false;
 
   // If it defines an SGPR it depends on EXEC, unless it's dead.
   const MachineRegisterInfo &MRI = MI.getMF()->getRegInfo();
@@ -325,11 +326,82 @@ bool SIInstrInfo::resultDependsOnExec(const MachineInstr &MI) const {
   return false;
 }
 
+static bool isSinkableLoad(const SIInstrInfo &TII, const MachineInstr &MI) {
+  if (!MI.mayLoad() || MI.mayStore() || MI.isConvergent() ||
+      MI.hasOrderedMemoryRef())
+    return false;
+
+  if (TII.isFLATGlobal(MI))
+    return true;
+
+  // hasOrderedMemoryRef() guarantees MI.memoperands() is non-empty.
+  return (TII.isMUBUF(MI) || TII.isMTBUF(MI)) &&
+         llvm::all_of(MI.memoperands(), [](const MachineMemOperand *MMO) {
+           return MMO->isInvariant() && MMO->isDereferenceable();
+         });
+}
+
+bool SIInstrInfo::isSinkableUse(const MachineInstr &MI, unsigned OpIdx) const {
+  const MachineOperand &MO = MI.getOperand(OpIdx);
+  const AMDGPU::MIMGBaseOpcodeInfo *BaseInfo =
+      AMDGPU::getMIMGBaseOpcode(MI.getOpcode());
+  bool IsSamplingOp = BaseInfo && BaseInfo->Sampler && !isWQM(MI);
+
+  return MO.getReg() == AMDGPU::EXEC && MO.isImplicit() &&
+         (isVALU(MI, /*AllowLDSDMA=*/true) || IsSamplingOp ||
+          isSinkableLoad(*this, MI));
+}
+
 bool SIInstrInfo::isIgnorableUse(const MachineInstr &MI, unsigned OpIdx) const {
   const MachineOperand &MO = MI.getOperand(OpIdx);
   // Any implicit use of exec by VALU is not a real register read.
   return MO.getReg() == AMDGPU::EXEC && MO.isImplicit() &&
          isVALU(MI, /*AllowLDSDMA=*/true) && !resultDependsOnExec(MI);
+}
+
+bool SIInstrInfo::hasNoMemorySideEffects(const MachineInstr &MI) const {
+  return MI.getOpcode() == AMDGPU::SI_KILL_I1_TERMINATOR ||
+         MI.getOpcode() == AMDGPU::SI_KILL_F32_COND_IMM_TERMINATOR ||
+         MI.getOpcode() == AMDGPU::SI_DEMOTE_I1;
+}
+
+/// Return true if EXEC at the point \p MI would be sunk to in \p SuccToSinkTo
+/// is known to be the same as EXEC at \p MI.
+///
+/// TODO: Also allow narrower EXEC if safe.
+static bool execIsSameAtSink(const MachineInstr &MI,
+                             MachineBasicBlock *SuccToSinkTo,
+                             const SIRegisterInfo &RI) {
+  const MachineBasicBlock *MBB = MI.getParent();
+
+  MachineBasicBlock::const_iterator End = MBB->end();
+  for (auto I = std::next(MI.getIterator()); I != End; ++I)
+    if (I->modifiesRegister(AMDGPU::EXEC, &RI))
+      return false;
+
+  MachineBasicBlock::iterator InsertPos =
+      SuccToSinkTo->SkipPHIsAndLabels(SuccToSinkTo->begin());
+  for (auto I = SuccToSinkTo->begin(); I != InsertPos; ++I)
+    if (I->modifiesRegister(AMDGPU::EXEC, &RI))
+      return false;
+
+  // Traverse the blocks reachable before SuccToSinkTo looking for any EXEC
+  // modification.
+  SmallPtrSet<const MachineBasicBlock *, 8> Visited;
+  SmallVector<const MachineBasicBlock *, 8> Worklist(MBB->succ_begin(),
+                                                     MBB->succ_end());
+  while (!Worklist.empty()) {
+    const MachineBasicBlock *BB = Worklist.pop_back_val();
+    if (!Visited.insert(BB).second)
+      continue;
+    if (BB == SuccToSinkTo)
+      continue;
+    for (const MachineInstr &I : *BB)
+      if (I.modifiesRegister(AMDGPU::EXEC, &RI))
+        return false;
+    Worklist.append(BB->succ_begin(), BB->succ_end());
+  }
+  return true;
 }
 
 bool SIInstrInfo::isSafeToSink(MachineInstr &MI,
@@ -340,6 +412,10 @@ bool SIInstrInfo::isSafeToSink(MachineInstr &MI,
     return true;
 
   MachineRegisterInfo &MRI = MI.getMF()->getRegInfo();
+
+  if (resultDependsOnExec(MI) && !execIsSameAtSink(MI, SuccToSinkTo, RI))
+    return false;
+
   // Check if sinking of MI would create temporal divergent use.
   for (auto Op : MI.uses()) {
     if (Op.isReg() && Op.getReg().isVirtual() &&
@@ -372,6 +448,63 @@ bool SIInstrInfo::isSafeToSink(MachineInstr &MI,
   }
 
   return true;
+}
+
+bool SIInstrInfo::isProfitableToSink(MachineInstr &MI,
+                                     MachineBasicBlock *SuccToSinkTo,
+                                     const MachineDominatorTree *DT) const {
+  // This cover cases where MachineSink tries to sink into if/else branches -
+  // always allow it.
+  // TODO: Verify whether calculating pressure would be beneficial also in those
+  // cases.
+  if (MI.getParent()->isSuccessor(SuccToSinkTo))
+    return true;
+
+  // Approximate the VGPR live-range effect of sinking MI by counting the
+  // number of VGPR defs and uses. When #defs >= #uses sinking most likely
+  // shortens more live ranges than it extends.
+  // TODO: Also consider AGPR pressure.
+  MachineRegisterInfo &MRI = MI.getMF()->getRegInfo();
+
+  auto CountVGPRRegUnits = [&](const MachineOperand &MO) {
+    const TargetRegisterClass *RC = MRI.getRegClass(MO.getReg());
+    if (!SIRegisterInfo::isVGPRClass(RC))
+      return 0u;
+    unsigned W = RI.getRegClassWeight(RC).RegWeight;
+    return (W && MO.getSubReg()) ? RI.getSubRegIdxSize(MO.getSubReg()) / 32 : W;
+  };
+
+  unsigned DefU = 0, UseU = 0;
+  SmallVector<Register, 8> SeenUses;
+  for (const MachineOperand &MO : MI.operands()) {
+    if (!MO.isReg())
+      continue;
+
+    Register Reg = MO.getReg();
+    if (!Reg.isVirtual())
+      continue;
+
+    if (MO.isDef()) {
+      DefU += CountVGPRRegUnits(MO);
+    } else if (MO.isUse() && !is_contained(SeenUses, Reg)) {
+      SeenUses.push_back(Reg);
+      // Sinking MI lengthens this operand's live range unless the value is
+      // already live across the sink point.
+      bool LiveAcrossSink = false;
+      if (DT) {
+        for (MachineInstr &U : MRI.use_nodbg_instructions(Reg)) {
+          if (&U != &MI && DT->dominates(SuccToSinkTo, U.getParent())) {
+            LiveAcrossSink = true;
+            break;
+          }
+        }
+      }
+      if (!LiveAcrossSink)
+        UseU += CountVGPRRegUnits(MO);
+    }
+  }
+
+  return UseU <= DefU;
 }
 
 bool SIInstrInfo::areLoadsFromSameBasePtr(SDNode *Load0, SDNode *Load1,

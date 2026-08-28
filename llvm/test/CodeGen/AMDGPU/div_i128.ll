@@ -2308,20 +2308,20 @@ define i128 @v_udiv_i128_vv(i128 %lhs, i128 %rhs) {
 ; GFX9-NEXT:    v_subrev_u32_e32 v12, 64, v18
 ; GFX9-NEXT:    v_or_b32_e32 v15, v13, v15
 ; GFX9-NEXT:    v_lshrrev_b64 v[12:13], v12, v[2:3]
-; GFX9-NEXT:    v_lshrrev_b64 v[2:3], v18, v[2:3]
+; GFX9-NEXT:    v_cmp_eq_u32_e64 s[4:5], 0, v18
 ; GFX9-NEXT:    v_cndmask_b32_e32 v13, v13, v15, vcc
+; GFX9-NEXT:    v_cndmask_b32_e64 v15, v13, v1, s[4:5]
+; GFX9-NEXT:    v_lshrrev_b64 v[1:2], v18, v[2:3]
 ; GFX9-NEXT:    v_cndmask_b32_e32 v12, v12, v14, vcc
-; GFX9-NEXT:    v_cndmask_b32_e32 v15, 0, v3, vcc
-; GFX9-NEXT:    v_cndmask_b32_e32 v14, 0, v2, vcc
+; GFX9-NEXT:    v_cndmask_b32_e32 v3, 0, v2, vcc
+; GFX9-NEXT:    v_cndmask_b32_e32 v2, 0, v1, vcc
 ; GFX9-NEXT:    v_add_co_u32_e32 v22, vcc, -1, v4
 ; GFX9-NEXT:    v_addc_co_u32_e32 v23, vcc, -1, v5, vcc
-; GFX9-NEXT:    v_cmp_eq_u32_e64 s[4:5], 0, v18
 ; GFX9-NEXT:    v_addc_co_u32_e32 v24, vcc, -1, v6, vcc
-; GFX9-NEXT:    v_cndmask_b32_e64 v1, v13, v1, s[4:5]
-; GFX9-NEXT:    v_cndmask_b32_e64 v0, v12, v0, s[4:5]
+; GFX9-NEXT:    v_cndmask_b32_e64 v14, v12, v0, s[4:5]
 ; GFX9-NEXT:    v_addc_co_u32_e32 v25, vcc, -1, v7, vcc
-; GFX9-NEXT:    v_mov_b32_e32 v2, 0
-; GFX9-NEXT:    v_mov_b32_e32 v3, 0
+; GFX9-NEXT:    v_mov_b32_e32 v0, 0
+; GFX9-NEXT:    v_mov_b32_e32 v1, 0
 ; GFX9-NEXT:    s_mov_b64 s[4:5], 0
 ; GFX9-NEXT:    v_mov_b32_e32 v16, 0
 ; GFX9-NEXT:    v_mov_b32_e32 v17, 0
@@ -2330,27 +2330,27 @@ define i128 @v_udiv_i128_vv(i128 %lhs, i128 %rhs) {
 ; GFX9-NEXT:    ; =>This Inner Loop Header: Depth=1
 ; GFX9-NEXT:    v_lshrrev_b32_e32 v12, 31, v11
 ; GFX9-NEXT:    v_lshlrev_b64 v[10:11], 1, v[10:11]
-; GFX9-NEXT:    v_lshlrev_b64 v[14:15], 1, v[14:15]
+; GFX9-NEXT:    v_lshlrev_b64 v[2:3], 1, v[2:3]
 ; GFX9-NEXT:    v_or_b32_e32 v10, v16, v10
-; GFX9-NEXT:    v_lshrrev_b32_e32 v16, 31, v1
-; GFX9-NEXT:    v_lshlrev_b64 v[0:1], 1, v[0:1]
-; GFX9-NEXT:    v_or_b32_e32 v14, v14, v16
+; GFX9-NEXT:    v_lshrrev_b32_e32 v16, 31, v15
+; GFX9-NEXT:    v_lshlrev_b64 v[14:15], 1, v[14:15]
+; GFX9-NEXT:    v_or_b32_e32 v2, v2, v16
 ; GFX9-NEXT:    v_lshrrev_b32_e32 v16, 31, v9
-; GFX9-NEXT:    v_or_b32_e32 v0, v0, v16
-; GFX9-NEXT:    v_sub_co_u32_e32 v16, vcc, v22, v0
-; GFX9-NEXT:    v_subb_co_u32_e32 v16, vcc, v23, v1, vcc
-; GFX9-NEXT:    v_subb_co_u32_e32 v16, vcc, v24, v14, vcc
-; GFX9-NEXT:    v_subb_co_u32_e32 v16, vcc, v25, v15, vcc
+; GFX9-NEXT:    v_or_b32_e32 v14, v14, v16
+; GFX9-NEXT:    v_sub_co_u32_e32 v16, vcc, v22, v14
+; GFX9-NEXT:    v_subb_co_u32_e32 v16, vcc, v23, v15, vcc
+; GFX9-NEXT:    v_subb_co_u32_e32 v16, vcc, v24, v2, vcc
+; GFX9-NEXT:    v_subb_co_u32_e32 v16, vcc, v25, v3, vcc
 ; GFX9-NEXT:    v_ashrrev_i32_e32 v26, 31, v16
 ; GFX9-NEXT:    v_and_b32_e32 v16, v26, v4
 ; GFX9-NEXT:    v_or_b32_e32 v11, v17, v11
 ; GFX9-NEXT:    v_and_b32_e32 v17, v26, v5
-; GFX9-NEXT:    v_sub_co_u32_e32 v0, vcc, v0, v16
-; GFX9-NEXT:    v_subb_co_u32_e32 v1, vcc, v1, v17, vcc
+; GFX9-NEXT:    v_sub_co_u32_e32 v14, vcc, v14, v16
+; GFX9-NEXT:    v_subb_co_u32_e32 v15, vcc, v15, v17, vcc
 ; GFX9-NEXT:    v_and_b32_e32 v16, v26, v6
 ; GFX9-NEXT:    v_and_b32_e32 v17, v26, v7
-; GFX9-NEXT:    v_subb_co_u32_e32 v14, vcc, v14, v16, vcc
-; GFX9-NEXT:    v_subb_co_u32_e32 v15, vcc, v15, v17, vcc
+; GFX9-NEXT:    v_subb_co_u32_e32 v2, vcc, v2, v16, vcc
+; GFX9-NEXT:    v_subb_co_u32_e32 v3, vcc, v3, v17, vcc
 ; GFX9-NEXT:    v_add_co_u32_e32 v18, vcc, -1, v18
 ; GFX9-NEXT:    v_addc_co_u32_e32 v19, vcc, -1, v19, vcc
 ; GFX9-NEXT:    v_addc_co_u32_e32 v20, vcc, -1, v20, vcc
@@ -2359,9 +2359,9 @@ define i128 @v_udiv_i128_vv(i128 %lhs, i128 %rhs) {
 ; GFX9-NEXT:    v_or_b32_e32 v16, v18, v20
 ; GFX9-NEXT:    v_or_b32_e32 v17, v19, v21
 ; GFX9-NEXT:    v_cmp_eq_u64_e32 vcc, 0, v[16:17]
-; GFX9-NEXT:    v_or3_b32 v8, v8, v12, v2
+; GFX9-NEXT:    v_or3_b32 v8, v8, v12, v0
 ; GFX9-NEXT:    v_and_b32_e32 v12, 1, v26
-; GFX9-NEXT:    v_or3_b32 v9, v9, 0, v3
+; GFX9-NEXT:    v_or3_b32 v9, v9, 0, v1
 ; GFX9-NEXT:    s_or_b64 s[4:5], vcc, s[4:5]
 ; GFX9-NEXT:    v_mov_b32_e32 v17, v13
 ; GFX9-NEXT:    v_mov_b32_e32 v16, v12

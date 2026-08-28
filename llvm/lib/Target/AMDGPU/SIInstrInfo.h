@@ -288,8 +288,15 @@ public:
 
   bool isIgnorableUse(const MachineInstr &MI, unsigned OpIdx) const override;
 
+  bool isSinkableUse(const MachineInstr &MI, unsigned OpIdx) const override;
+
+  bool hasNoMemorySideEffects(const MachineInstr &MI) const override;
+
   bool isSafeToSink(MachineInstr &MI, MachineBasicBlock *SuccToSinkTo,
                     MachineCycleInfo *CI) const override;
+
+  bool isProfitableToSink(MachineInstr &MI, MachineBasicBlock *SuccToSinkTo,
+                          const MachineDominatorTree *DT) const override;
 
   bool areLoadsFromSameBasePtr(SDNode *Load0, SDNode *Load1, int64_t &Offset0,
                                int64_t &Offset1) const override;

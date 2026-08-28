@@ -340,26 +340,24 @@ bb3:
 define amdgpu_kernel void @min_long_forward_vbranch(ptr addrspace(1) %arg) #0 {
 ; GCN-LABEL: min_long_forward_vbranch:
 ; GCN:       ; %bb.0: ; %bb
-; GCN-NEXT:    s_load_dwordx2 s[0:1], s[4:5], 0x9
+; GCN-NEXT:    s_load_dwordx2 s[4:5], s[4:5], 0x9
 ; GCN-NEXT:    v_lshlrev_b32_e32 v0, 2, v0
 ; GCN-NEXT:    v_mov_b32_e32 v1, 0
-; GCN-NEXT:    s_mov_b32 s3, 0xf000
-; GCN-NEXT:    s_mov_b32 s2, 0
+; GCN-NEXT:    s_mov_b32 s7, 0xf000
+; GCN-NEXT:    s_mov_b32 s6, 0
 ; GCN-NEXT:    s_waitcnt lgkmcnt(0)
-; GCN-NEXT:    buffer_load_dword v2, v[0:1], s[0:3], 0 addr64 glc
+; GCN-NEXT:    buffer_load_dword v2, v[0:1], s[4:7], 0 addr64 glc
 ; GCN-NEXT:    s_waitcnt vmcnt(0)
-; GCN-NEXT:    v_mov_b32_e32 v1, s1
-; GCN-NEXT:    v_add_i32_e32 v0, vcc, s0, v0
-; GCN-NEXT:    v_addc_u32_e32 v1, vcc, 0, v1, vcc
-; GCN-NEXT:    v_cmp_ne_u32_e32 vcc, 0, v2
-; GCN-NEXT:    s_and_saveexec_b64 s[0:1], vcc
+; GCN-NEXT:    v_add_i32_e32 v0, vcc, s4, v0
+; GCN-NEXT:    v_cmp_ne_u32_e64 s[0:1], 0, v2
+; GCN-NEXT:    s_and_saveexec_b64 s[2:3], s[0:1]
 ; GCN-NEXT:    s_cbranch_execnz .LBB3_1
 ; GCN-NEXT:  ; %bb.3: ; %bb
-; GCN-NEXT:    s_getpc_b64 s[4:5]
+; GCN-NEXT:    s_getpc_b64 s[0:1]
 ; GCN-NEXT:  .Lpost_getpc2:
-; GCN-NEXT:    s_add_u32 s4, s4, (.LBB3_2-.Lpost_getpc2)&4294967295
-; GCN-NEXT:    s_addc_u32 s5, s5, (.LBB3_2-.Lpost_getpc2)>>32
-; GCN-NEXT:    s_setpc_b64 s[4:5]
+; GCN-NEXT:    s_add_u32 s0, s0, (.LBB3_2-.Lpost_getpc2)&4294967295
+; GCN-NEXT:    s_addc_u32 s1, s1, (.LBB3_2-.Lpost_getpc2)>>32
+; GCN-NEXT:    s_setpc_b64 s[0:1]
 ; GCN-NEXT:  .LBB3_1: ; %bb2
 ; GCN-NEXT:    ;;#ASMSTART
 ; GCN-NEXT:     ; 32 bytes
@@ -369,10 +367,12 @@ define amdgpu_kernel void @min_long_forward_vbranch(ptr addrspace(1) %arg) #0 {
 ; GCN-NEXT:    v_nop_e64
 ; GCN-NEXT:    ;;#ASMEND
 ; GCN-NEXT:  .LBB3_2: ; %bb3
-; GCN-NEXT:    s_or_b64 exec, exec, s[0:1]
-; GCN-NEXT:    s_mov_b32 s0, s2
-; GCN-NEXT:    s_mov_b32 s1, s2
-; GCN-NEXT:    buffer_store_dword v2, v[0:1], s[0:3], 0 addr64
+; GCN-NEXT:    s_or_b64 exec, exec, s[2:3]
+; GCN-NEXT:    v_mov_b32_e32 v1, s5
+; GCN-NEXT:    v_addc_u32_e32 v1, vcc, 0, v1, vcc
+; GCN-NEXT:    s_mov_b32 s4, s6
+; GCN-NEXT:    s_mov_b32 s5, s6
+; GCN-NEXT:    buffer_store_dword v2, v[0:1], s[4:7], 0 addr64
 ; GCN-NEXT:    s_waitcnt vmcnt(0)
 ; GCN-NEXT:    s_endpgm
 ;
@@ -380,24 +380,23 @@ define amdgpu_kernel void @min_long_forward_vbranch(ptr addrspace(1) %arg) #0 {
 ; GFX11:       ; %bb.0: ; %bb
 ; GFX11-NEXT:    s_load_b64 s[0:1], s[4:5], 0x24
 ; GFX11-NEXT:    v_and_b32_e32 v0, 0x3ff, v0
-; GFX11-NEXT:    s_delay_alu instid0(VALU_DEP_1) | instskip(SKIP_4) | instid1(VALU_DEP_1)
+; GFX11-NEXT:    s_mov_b64 s[4:5], exec
+; GFX11-NEXT:    s_delay_alu instid0(VALU_DEP_1)
 ; GFX11-NEXT:    v_lshlrev_b32_e32 v0, 2, v0
 ; GFX11-NEXT:    s_waitcnt lgkmcnt(0)
 ; GFX11-NEXT:    global_load_b32 v2, v0, s[0:1] glc dlc
 ; GFX11-NEXT:    s_waitcnt vmcnt(0)
 ; GFX11-NEXT:    v_add_co_u32 v0, s[2:3], s0, v0
-; GFX11-NEXT:    v_add_co_ci_u32_e64 v1, null, s1, 0, s[2:3]
-; GFX11-NEXT:    s_mov_b64 s[0:1], exec
 ; GFX11-NEXT:    v_cmpx_ne_u32_e32 0, v2
 ; GFX11-NEXT:    s_cbranch_execnz .LBB3_1
 ; GFX11-NEXT:  ; %bb.3: ; %bb
-; GFX11-NEXT:    s_getpc_b64 s[2:3]
+; GFX11-NEXT:    s_getpc_b64 s[6:7]
 ; GFX11-NEXT:  .Lpost_getpc3:
 ; GFX11-NEXT:    s_waitcnt_depctr depctr_sa_sdst(0)
-; GFX11-NEXT:    s_add_u32 s2, s2, (.LBB3_2-.Lpost_getpc3)&4294967295
-; GFX11-NEXT:    s_addc_u32 s3, s3, (.LBB3_2-.Lpost_getpc3)>>32
+; GFX11-NEXT:    s_add_u32 s6, s6, (.LBB3_2-.Lpost_getpc3)&4294967295
+; GFX11-NEXT:    s_addc_u32 s7, s7, (.LBB3_2-.Lpost_getpc3)>>32
 ; GFX11-NEXT:    s_waitcnt_depctr depctr_sa_sdst(0)
-; GFX11-NEXT:    s_setpc_b64 s[2:3]
+; GFX11-NEXT:    s_setpc_b64 s[6:7]
 ; GFX11-NEXT:  .LBB3_1: ; %bb2
 ; GFX11-NEXT:    ;;#ASMSTART
 ; GFX11-NEXT:     ; 32 bytes
@@ -407,7 +406,8 @@ define amdgpu_kernel void @min_long_forward_vbranch(ptr addrspace(1) %arg) #0 {
 ; GFX11-NEXT:    v_nop_e64
 ; GFX11-NEXT:    ;;#ASMEND
 ; GFX11-NEXT:  .LBB3_2: ; %bb3
-; GFX11-NEXT:    s_or_b64 exec, exec, s[0:1]
+; GFX11-NEXT:    s_or_b64 exec, exec, s[4:5]
+; GFX11-NEXT:    v_add_co_ci_u32_e64 v1, null, s1, 0, s[2:3]
 ; GFX11-NEXT:    global_store_b32 v[0:1], v2, off dlc
 ; GFX11-NEXT:    s_waitcnt_vscnt null, 0x0
 ; GFX11-NEXT:    s_endpgm
@@ -416,25 +416,23 @@ define amdgpu_kernel void @min_long_forward_vbranch(ptr addrspace(1) %arg) #0 {
 ; GFX12:       ; %bb.0: ; %bb
 ; GFX12-NEXT:    s_load_b64 s[0:1], s[4:5], 0x24
 ; GFX12-NEXT:    v_and_b32_e32 v0, 0x3ff, v0
+; GFX12-NEXT:    s_mov_b32 s2, exec_lo
 ; GFX12-NEXT:    s_delay_alu instid0(VALU_DEP_1)
 ; GFX12-NEXT:    v_lshlrev_b32_e32 v0, 2, v0
 ; GFX12-NEXT:    s_wait_kmcnt 0x0
 ; GFX12-NEXT:    global_load_b32 v2, v0, s[0:1] scope:SCOPE_SYS
 ; GFX12-NEXT:    s_wait_loadcnt 0x0
 ; GFX12-NEXT:    v_add_co_u32 v0, s0, s0, v0
-; GFX12-NEXT:    s_wait_alu depctr_va_sdst(0)
-; GFX12-NEXT:    v_add_co_ci_u32_e64 v1, null, s1, 0, s0
-; GFX12-NEXT:    s_mov_b32 s0, exec_lo
 ; GFX12-NEXT:    v_cmpx_ne_u32_e32 0, v2
 ; GFX12-NEXT:    s_cbranch_execnz .LBB3_1
 ; GFX12-NEXT:  ; %bb.3: ; %bb
-; GFX12-NEXT:    s_getpc_b64 s[2:3]
+; GFX12-NEXT:    s_getpc_b64 s[4:5]
 ; GFX12-NEXT:  .Lpost_getpc3:
 ; GFX12-NEXT:    s_wait_alu depctr_sa_sdst(0)
-; GFX12-NEXT:    s_add_co_u32 s2, s2, (.LBB3_2-.Lpost_getpc3)&4294967295
-; GFX12-NEXT:    s_add_co_ci_u32 s3, s3, (.LBB3_2-.Lpost_getpc3)>>32
+; GFX12-NEXT:    s_add_co_u32 s4, s4, (.LBB3_2-.Lpost_getpc3)&4294967295
+; GFX12-NEXT:    s_add_co_ci_u32 s5, s5, (.LBB3_2-.Lpost_getpc3)>>32
 ; GFX12-NEXT:    s_wait_alu depctr_sa_sdst(0)
-; GFX12-NEXT:    s_setpc_b64 s[2:3]
+; GFX12-NEXT:    s_setpc_b64 s[4:5]
 ; GFX12-NEXT:  .LBB3_1: ; %bb2
 ; GFX12-NEXT:    ;;#ASMSTART
 ; GFX12-NEXT:     ; 32 bytes
@@ -444,8 +442,9 @@ define amdgpu_kernel void @min_long_forward_vbranch(ptr addrspace(1) %arg) #0 {
 ; GFX12-NEXT:    v_nop_e64
 ; GFX12-NEXT:    ;;#ASMEND
 ; GFX12-NEXT:  .LBB3_2: ; %bb3
-; GFX12-NEXT:    s_wait_alu depctr_sa_sdst(0)
-; GFX12-NEXT:    s_or_b32 exec_lo, exec_lo, s0
+; GFX12-NEXT:    s_or_b32 exec_lo, exec_lo, s2
+; GFX12-NEXT:    s_wait_alu depctr_va_sdst(0)
+; GFX12-NEXT:    v_add_co_ci_u32_e64 v1, null, s1, 0, s0
 ; GFX12-NEXT:    global_store_b32 v[0:1], v2, off scope:SCOPE_SYS
 ; GFX12-NEXT:    s_wait_storecnt 0x0
 ; GFX12-NEXT:    s_endpgm

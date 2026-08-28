@@ -344,81 +344,81 @@ entry:
 define amdgpu_kernel void @extra_and(ptr addrspace(1) %arg, i32 %arg2, i32 %arg3) {
 ; EG-LABEL: extra_and:
 ; EG:       ; %bb.0: ; %bb
-; EG-NEXT:    ALU 5, @10, KC0[CB0:0-32], KC1[]
+; EG-NEXT:    ALU 4, @10, KC0[CB0:0-32], KC1[]
 ; EG-NEXT:    LOOP_START_DX10 @7
-; EG-NEXT:    ALU_PUSH_BEFORE 12, @16, KC0[], KC1[]
+; EG-NEXT:    ALU_PUSH_BEFORE 12, @15, KC0[], KC1[]
 ; EG-NEXT:    JUMP @6 POP:1
 ; EG-NEXT:    LOOP_BREAK @6
 ; EG-NEXT:    POP @6 POP:1
 ; EG-NEXT:    END_LOOP @2
-; EG-NEXT:    ALU 1, @29, KC0[], KC1[]
+; EG-NEXT:    ALU 2, @28, KC0[CB0:0-32], KC1[]
 ; EG-NEXT:    MEM_RAT_CACHELESS STORE_RAW T0.X, T1.X, 1
 ; EG-NEXT:    CF_END
 ; EG-NEXT:    ALU clause starting at 10:
-; EG-NEXT:     MOV * T1.W, literal.x,
+; EG-NEXT:     MOV * T2.W, literal.x,
 ; EG-NEXT:    0(0.000000e+00), 0(0.000000e+00)
-; EG-NEXT:     MOV * T3.W, PV.W,
-; EG-NEXT:     MOV T0.Z, KC0[2].Y,
-; EG-NEXT:     MOV T0.W, KC0[2].Z,
-; EG-NEXT:     MOV * T2.W, KC0[2].W,
-; EG-NEXT:    ALU clause starting at 16:
-; EG-NEXT:     AND_INT T1.W, T1.W, literal.x,
+; EG-NEXT:     MOV T3.W, PV.W,
+; EG-NEXT:     MOV * T0.W, KC0[2].Z,
+; EG-NEXT:     MOV * T1.W, KC0[2].W,
+; EG-NEXT:    ALU clause starting at 15:
+; EG-NEXT:     AND_INT T2.W, T2.W, literal.x,
 ; EG-NEXT:     AND_INT * T4.W, T3.W, literal.x,
 ; EG-NEXT:    16777215(2.350989e-38), 0(0.000000e+00)
 ; EG-NEXT:     AND_INT T3.W, T3.W, literal.x,
 ; EG-NEXT:     MULLO_INT * T0.X, PS, PV.W,
 ; EG-NEXT:    16777215(2.350989e-38), 0(0.000000e+00)
-; EG-NEXT:     MULLO_INT * T0.Y, PV.W, T1.W,
-; EG-NEXT:     ADD_INT T3.W, T2.W, PS,
-; EG-NEXT:     ADD_INT * T1.W, T0.W, T0.X,
+; EG-NEXT:     MULLO_INT * T0.Y, PV.W, T2.W,
+; EG-NEXT:     ADD_INT T3.W, T1.W, PS,
+; EG-NEXT:     ADD_INT * T2.W, T0.W, T0.X,
 ; EG-NEXT:     ADD_INT * T0.X, PS, PV.W,
 ; EG-NEXT:     SETNE_INT * T4.W, PV.X, literal.x,
 ; EG-NEXT:    8(1.121039e-44), 0(0.000000e+00)
 ; EG-NEXT:     PRED_SETE_INT * ExecMask,PredicateBit (MASKED), PV.W, 0.0,
-; EG-NEXT:    ALU clause starting at 29:
-; EG-NEXT:     LSHR * T1.X, T0.Z, literal.x,
+; EG-NEXT:    ALU clause starting at 28:
+; EG-NEXT:     MOV * T0.W, KC0[2].Y,
+; EG-NEXT:     LSHR * T1.X, PV.W, literal.x,
 ; EG-NEXT:    2(2.802597e-45), 0(0.000000e+00)
 ;
 ; CM-LABEL: extra_and:
 ; CM:       ; %bb.0: ; %bb
-; CM-NEXT:    ALU 5, @10, KC0[CB0:0-32], KC1[]
+; CM-NEXT:    ALU 4, @10, KC0[CB0:0-32], KC1[]
 ; CM-NEXT:    LOOP_START_DX10 @7
-; CM-NEXT:    ALU_PUSH_BEFORE 17, @16, KC0[], KC1[]
+; CM-NEXT:    ALU_PUSH_BEFORE 17, @15, KC0[], KC1[]
 ; CM-NEXT:    JUMP @6 POP:1
 ; CM-NEXT:    LOOP_BREAK @6
 ; CM-NEXT:    POP @6 POP:1
 ; CM-NEXT:    END_LOOP @2
-; CM-NEXT:    ALU 1, @34, KC0[], KC1[]
+; CM-NEXT:    ALU 2, @33, KC0[CB0:0-32], KC1[]
 ; CM-NEXT:    MEM_RAT_CACHELESS STORE_DWORD T0.X, T1.X
 ; CM-NEXT:    CF_END
 ; CM-NEXT:    ALU clause starting at 10:
-; CM-NEXT:     MOV * T0.W, literal.x,
+; CM-NEXT:     MOV * T1.W, literal.x,
 ; CM-NEXT:    0(0.000000e+00), 0(0.000000e+00)
 ; CM-NEXT:     MOV * T1.Z, PV.W,
-; CM-NEXT:     MOV T0.Y, KC0[2].Y,
 ; CM-NEXT:     MOV T0.Z, KC0[2].Z,
-; CM-NEXT:     MOV * T1.W, KC0[2].W,
-; CM-NEXT:    ALU clause starting at 16:
-; CM-NEXT:     AND_INT T1.Y, T1.Z, literal.x,
-; CM-NEXT:     AND_INT T2.Z, T0.W, literal.x,
-; CM-NEXT:     AND_INT * T0.W, T1.Z, literal.x,
+; CM-NEXT:     MOV * T0.W, KC0[2].W,
+; CM-NEXT:    ALU clause starting at 15:
+; CM-NEXT:     AND_INT T0.Y, T1.Z, literal.x,
+; CM-NEXT:     AND_INT T2.Z, T1.W, literal.x,
+; CM-NEXT:     AND_INT * T1.W, T1.Z, literal.x,
 ; CM-NEXT:    16777215(2.350989e-38), 0(0.000000e+00)
-; CM-NEXT:     MULLO_INT T0.X, T0.W, T2.Z,
-; CM-NEXT:     MULLO_INT T0.Y (MASKED), T0.W, T2.Z,
-; CM-NEXT:     MULLO_INT T0.Z (MASKED), T0.W, T2.Z,
-; CM-NEXT:     MULLO_INT * T0.W (MASKED), T0.W, T2.Z,
-; CM-NEXT:     MULLO_INT T0.X (MASKED), T1.Y, T2.Z,
-; CM-NEXT:     MULLO_INT T0.Y (MASKED), T1.Y, T2.Z,
-; CM-NEXT:     MULLO_INT T0.Z (MASKED), T1.Y, T2.Z,
-; CM-NEXT:     MULLO_INT * T0.W, T1.Y, T2.Z,
-; CM-NEXT:     ADD_INT T1.Z, T1.W, PV.W,
-; CM-NEXT:     ADD_INT * T0.W, T0.Z, T0.X,
+; CM-NEXT:     MULLO_INT T0.X, T1.W, T2.Z,
+; CM-NEXT:     MULLO_INT T0.Y (MASKED), T1.W, T2.Z,
+; CM-NEXT:     MULLO_INT T0.Z (MASKED), T1.W, T2.Z,
+; CM-NEXT:     MULLO_INT * T0.W (MASKED), T1.W, T2.Z,
+; CM-NEXT:     MULLO_INT T0.X (MASKED), T0.Y, T2.Z,
+; CM-NEXT:     MULLO_INT T0.Y, T0.Y, T2.Z,
+; CM-NEXT:     MULLO_INT T0.Z (MASKED), T0.Y, T2.Z,
+; CM-NEXT:     MULLO_INT * T0.W (MASKED), T0.Y, T2.Z,
+; CM-NEXT:     ADD_INT T1.Z, T0.W, PV.Y,
+; CM-NEXT:     ADD_INT * T1.W, T0.Z, T0.X,
 ; CM-NEXT:     ADD_INT * T0.X, PV.W, PV.Z,
 ; CM-NEXT:     SETNE_INT * T2.W, PV.X, literal.x,
 ; CM-NEXT:    8(1.121039e-44), 0(0.000000e+00)
 ; CM-NEXT:     PRED_SETE_INT * ExecMask,PredicateBit (MASKED), PV.W, 0.0,
-; CM-NEXT:    ALU clause starting at 34:
-; CM-NEXT:     LSHR * T1.X, T0.Y, literal.x,
+; CM-NEXT:    ALU clause starting at 33:
+; CM-NEXT:     MOV * T0.W, KC0[2].Y,
+; CM-NEXT:     LSHR * T1.X, PV.W, literal.x,
 ; CM-NEXT:    2(2.802597e-45), 0(0.000000e+00)
 ;
 ; GCN-LABEL: extra_and:
@@ -502,81 +502,81 @@ bb18:                                             ; preds = %bb4
 define amdgpu_kernel void @dont_remove_shift(ptr addrspace(1) %arg, i32 %arg2, i32 %arg3) {
 ; EG-LABEL: dont_remove_shift:
 ; EG:       ; %bb.0: ; %bb
-; EG-NEXT:    ALU 5, @10, KC0[CB0:0-32], KC1[]
+; EG-NEXT:    ALU 4, @10, KC0[CB0:0-32], KC1[]
 ; EG-NEXT:    LOOP_START_DX10 @7
-; EG-NEXT:    ALU_PUSH_BEFORE 12, @16, KC0[], KC1[]
+; EG-NEXT:    ALU_PUSH_BEFORE 12, @15, KC0[], KC1[]
 ; EG-NEXT:    JUMP @6 POP:1
 ; EG-NEXT:    LOOP_BREAK @6
 ; EG-NEXT:    POP @6 POP:1
 ; EG-NEXT:    END_LOOP @2
-; EG-NEXT:    ALU 1, @29, KC0[], KC1[]
+; EG-NEXT:    ALU 2, @28, KC0[CB0:0-32], KC1[]
 ; EG-NEXT:    MEM_RAT_CACHELESS STORE_RAW T0.X, T1.X, 1
 ; EG-NEXT:    CF_END
 ; EG-NEXT:    ALU clause starting at 10:
-; EG-NEXT:     MOV * T1.W, literal.x,
+; EG-NEXT:     MOV * T2.W, literal.x,
 ; EG-NEXT:    0(0.000000e+00), 0(0.000000e+00)
-; EG-NEXT:     MOV * T3.W, PV.W,
-; EG-NEXT:     MOV T0.Z, KC0[2].Y,
-; EG-NEXT:     MOV T0.W, KC0[2].Z,
-; EG-NEXT:     MOV * T2.W, KC0[2].W,
-; EG-NEXT:    ALU clause starting at 16:
-; EG-NEXT:     LSHR T1.W, T1.W, literal.x,
+; EG-NEXT:     MOV T3.W, PV.W,
+; EG-NEXT:     MOV * T0.W, KC0[2].Z,
+; EG-NEXT:     MOV * T1.W, KC0[2].W,
+; EG-NEXT:    ALU clause starting at 15:
+; EG-NEXT:     LSHR T2.W, T2.W, literal.x,
 ; EG-NEXT:     LSHR * T4.W, T3.W, literal.x,
 ; EG-NEXT:    8(1.121039e-44), 0(0.000000e+00)
 ; EG-NEXT:     LSHR T3.W, T3.W, literal.x,
 ; EG-NEXT:     MULLO_INT * T0.X, PS, PV.W,
 ; EG-NEXT:    8(1.121039e-44), 0(0.000000e+00)
-; EG-NEXT:     MULLO_INT * T0.Y, PV.W, T1.W,
-; EG-NEXT:     ADD_INT T3.W, T2.W, PS,
-; EG-NEXT:     ADD_INT * T1.W, T0.W, T0.X,
+; EG-NEXT:     MULLO_INT * T0.Y, PV.W, T2.W,
+; EG-NEXT:     ADD_INT T3.W, T1.W, PS,
+; EG-NEXT:     ADD_INT * T2.W, T0.W, T0.X,
 ; EG-NEXT:     ADD_INT * T0.X, PS, PV.W,
 ; EG-NEXT:     SETNE_INT * T4.W, PV.X, literal.x,
 ; EG-NEXT:    8(1.121039e-44), 0(0.000000e+00)
 ; EG-NEXT:     PRED_SETE_INT * ExecMask,PredicateBit (MASKED), PV.W, 0.0,
-; EG-NEXT:    ALU clause starting at 29:
-; EG-NEXT:     LSHR * T1.X, T0.Z, literal.x,
+; EG-NEXT:    ALU clause starting at 28:
+; EG-NEXT:     MOV * T0.W, KC0[2].Y,
+; EG-NEXT:     LSHR * T1.X, PV.W, literal.x,
 ; EG-NEXT:    2(2.802597e-45), 0(0.000000e+00)
 ;
 ; CM-LABEL: dont_remove_shift:
 ; CM:       ; %bb.0: ; %bb
-; CM-NEXT:    ALU 5, @10, KC0[CB0:0-32], KC1[]
+; CM-NEXT:    ALU 4, @10, KC0[CB0:0-32], KC1[]
 ; CM-NEXT:    LOOP_START_DX10 @7
-; CM-NEXT:    ALU_PUSH_BEFORE 17, @16, KC0[], KC1[]
+; CM-NEXT:    ALU_PUSH_BEFORE 17, @15, KC0[], KC1[]
 ; CM-NEXT:    JUMP @6 POP:1
 ; CM-NEXT:    LOOP_BREAK @6
 ; CM-NEXT:    POP @6 POP:1
 ; CM-NEXT:    END_LOOP @2
-; CM-NEXT:    ALU 1, @34, KC0[], KC1[]
+; CM-NEXT:    ALU 2, @33, KC0[CB0:0-32], KC1[]
 ; CM-NEXT:    MEM_RAT_CACHELESS STORE_DWORD T0.X, T1.X
 ; CM-NEXT:    CF_END
 ; CM-NEXT:    ALU clause starting at 10:
-; CM-NEXT:     MOV * T0.W, literal.x,
+; CM-NEXT:     MOV * T1.W, literal.x,
 ; CM-NEXT:    0(0.000000e+00), 0(0.000000e+00)
 ; CM-NEXT:     MOV * T1.Z, PV.W,
-; CM-NEXT:     MOV T0.Y, KC0[2].Y,
 ; CM-NEXT:     MOV T0.Z, KC0[2].Z,
-; CM-NEXT:     MOV * T1.W, KC0[2].W,
-; CM-NEXT:    ALU clause starting at 16:
-; CM-NEXT:     LSHR T1.Y, T1.Z, literal.x,
-; CM-NEXT:     LSHR T2.Z, T0.W, literal.x,
-; CM-NEXT:     LSHR * T0.W, T1.Z, literal.x,
+; CM-NEXT:     MOV * T0.W, KC0[2].W,
+; CM-NEXT:    ALU clause starting at 15:
+; CM-NEXT:     LSHR T0.Y, T1.Z, literal.x,
+; CM-NEXT:     LSHR T2.Z, T1.W, literal.x,
+; CM-NEXT:     LSHR * T1.W, T1.Z, literal.x,
 ; CM-NEXT:    8(1.121039e-44), 0(0.000000e+00)
-; CM-NEXT:     MULLO_INT T0.X, T0.W, T2.Z,
-; CM-NEXT:     MULLO_INT T0.Y (MASKED), T0.W, T2.Z,
-; CM-NEXT:     MULLO_INT T0.Z (MASKED), T0.W, T2.Z,
-; CM-NEXT:     MULLO_INT * T0.W (MASKED), T0.W, T2.Z,
-; CM-NEXT:     MULLO_INT T0.X (MASKED), T1.Y, T2.Z,
-; CM-NEXT:     MULLO_INT T0.Y (MASKED), T1.Y, T2.Z,
-; CM-NEXT:     MULLO_INT T0.Z (MASKED), T1.Y, T2.Z,
-; CM-NEXT:     MULLO_INT * T0.W, T1.Y, T2.Z,
-; CM-NEXT:     ADD_INT T1.Z, T1.W, PV.W,
-; CM-NEXT:     ADD_INT * T0.W, T0.Z, T0.X,
+; CM-NEXT:     MULLO_INT T0.X, T1.W, T2.Z,
+; CM-NEXT:     MULLO_INT T0.Y (MASKED), T1.W, T2.Z,
+; CM-NEXT:     MULLO_INT T0.Z (MASKED), T1.W, T2.Z,
+; CM-NEXT:     MULLO_INT * T0.W (MASKED), T1.W, T2.Z,
+; CM-NEXT:     MULLO_INT T0.X (MASKED), T0.Y, T2.Z,
+; CM-NEXT:     MULLO_INT T0.Y, T0.Y, T2.Z,
+; CM-NEXT:     MULLO_INT T0.Z (MASKED), T0.Y, T2.Z,
+; CM-NEXT:     MULLO_INT * T0.W (MASKED), T0.Y, T2.Z,
+; CM-NEXT:     ADD_INT T1.Z, T0.W, PV.Y,
+; CM-NEXT:     ADD_INT * T1.W, T0.Z, T0.X,
 ; CM-NEXT:     ADD_INT * T0.X, PV.W, PV.Z,
 ; CM-NEXT:     SETNE_INT * T2.W, PV.X, literal.x,
 ; CM-NEXT:    8(1.121039e-44), 0(0.000000e+00)
 ; CM-NEXT:     PRED_SETE_INT * ExecMask,PredicateBit (MASKED), PV.W, 0.0,
-; CM-NEXT:    ALU clause starting at 34:
-; CM-NEXT:     LSHR * T1.X, T0.Y, literal.x,
+; CM-NEXT:    ALU clause starting at 33:
+; CM-NEXT:     MOV * T0.W, KC0[2].Y,
+; CM-NEXT:     LSHR * T1.X, PV.W, literal.x,
 ; CM-NEXT:    2(2.802597e-45), 0(0.000000e+00)
 ;
 ; GCN-LABEL: dont_remove_shift:

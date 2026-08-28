@@ -112,6 +112,13 @@ static cl::opt<unsigned> SinkIntoCycleLimit(
         "The maximum number of instructions considered for cycle sinking."),
     cl::init(50), cl::Hidden);
 
+static cl::opt<bool> SinkInstsIntoPostdominator(
+    "machine-sink-insts-to-postdominator",
+    cl::desc(
+        "Sink instructions into postdominators to reduce register pressure. "
+        "Uses target specific `isProfitableToSink` to decide if profitable."),
+    cl::init(true), cl::Hidden);
+
 STATISTIC(NumSunk, "Number of machine instructions sunk");
 STATISTIC(NumCycleSunk, "Number of machine instructions sunk into a cycle");
 STATISTIC(NumSplit, "Number of critical edges split");
@@ -277,6 +284,8 @@ private:
   GetAllSortedSuccessors(MachineInstr &MI, MachineBasicBlock *MBB,
                          AllSuccsCache &AllSuccessors) const;
 
+  MachineBasicBlock *getPostdominatedTarget(MachineBasicBlock *MBB) const;
+
   std::vector<unsigned> &getBBRegisterPressure(const MachineBasicBlock &MBB,
                                                bool UseCache = true);
 
@@ -352,9 +361,8 @@ static bool blockPrologueInterferes(const MachineBasicBlock *BB,
       if (!Reg)
         continue;
       if (MO.isUse()) {
-        if (Reg.isPhysical() &&
-            (TII->isIgnorableUse(MI, MI.getOperandNo(&MO)) ||
-             (MRI && MRI->isConstantPhysReg(Reg))))
+        if (Reg.isPhysical() && (TII->isSinkableUse(MI, MI.getOperandNo(&MO)) ||
+                                 (MRI && MRI->isConstantPhysReg(Reg))))
           continue;
         if (PI->modifiesRegister(Reg, TRI))
           return true;
@@ -957,7 +965,10 @@ bool MachineSinking::run(MachineFunction &MF) {
 }
 
 bool MachineSinking::ProcessBlock(MachineBasicBlock &MBB) {
-  if ((!EnableSinkAndFold && MBB.succ_size() <= 1) || MBB.empty())
+  MachineBasicBlock *PostdominatedTarget = getPostdominatedTarget(&MBB);
+
+  if ((!EnableSinkAndFold && MBB.succ_size() <= 1 && !PostdominatedTarget) ||
+      MBB.empty())
     return false;
 
   // Don't bother sinking code out of unreachable blocks. In addition to being
@@ -995,8 +1006,9 @@ bool MachineSinking::ProcessBlock(MachineBasicBlock &MBB) {
       continue;
     }
 
-    // Can't sink anything out of a block that has less than two successors.
-    if (MBB.succ_size() <= 1)
+    // Can't sink anything out of a block that has less than two successors,
+    // unless there is a postdominator to sink into.
+    if (MBB.succ_size() <= 1 && !PostdominatedTarget)
       continue;
 
     if (PerformTrivialForwardCoalescing(MI, &MBB)) {
@@ -1276,13 +1288,19 @@ bool MachineSinking::isProfitableToSinkTo(Register Reg, MachineInstr &MI,
   if (MBB == SuccToSinkTo)
     return false;
 
+  unsigned MBBCycleDepth = CI->getCycleDepth(MBB);
+  unsigned SuccCycleDepth = CI->getCycleDepth(SuccToSinkTo);
+
+  if (MBB->succ_size() <= 1 && SuccCycleDepth > MBBCycleDepth)
+    return false;
+
   // It is profitable if SuccToSinkTo does not post dominate current block.
   if (!PDT->dominates(SuccToSinkTo, MBB))
     return true;
 
   // It is profitable to sink an instruction from a deeper cycle to a shallower
   // cycle, even if the latter post-dominates the former (PR21115).
-  if (CI->getCycleDepth(MBB) > CI->getCycleDepth(SuccToSinkTo))
+  if (MBBCycleDepth > SuccCycleDepth)
     return true;
 
   // Check if only use in post dominated block is PHI instruction.
@@ -1306,8 +1324,9 @@ bool MachineSinking::isProfitableToSinkTo(Register Reg, MachineInstr &MI,
   CycleRef MCycle = CI->getCycle(MBB);
 
   // If the instruction is not inside a cycle, it is not profitable to sink MI
-  // to a post dominate block SuccToSinkTo.
-  if (!MCycle)
+  // unless it can reduce register pressure - determined by target specific
+  // `isProfitableToSink`.
+  if (!SinkInstsIntoPostdominator && !MCycle)
     return false;
 
   // If this instruction is inside a Cycle and sinking this instruction can make
@@ -1323,7 +1342,7 @@ bool MachineSinking::isProfitableToSinkTo(Register Reg, MachineInstr &MI,
     if (Reg.isPhysical()) {
       // Don't handle non-constant and non-ignorable physical register uses.
       if (MO.isUse() && !MRI->isConstantPhysReg(Reg) &&
-          !TII->isIgnorableUse(MI, MI.getOperandNo(&MO)))
+          !TII->isSinkableUse(MI, MI.getOperandNo(&MO)))
         return false;
       continue;
     }
@@ -1392,6 +1411,10 @@ MachineSinking::GetAllSortedSuccessors(MachineInstr &MI, MachineBasicBlock *MBB,
       AllSuccs.push_back(DTChild->getBlock());
   }
 
+  if (MachineBasicBlock *P = getPostdominatedTarget(MBB))
+    if (!is_contained(AllSuccs, P))
+      AllSuccs.push_back(P);
+
   // Sort Successors according to their cycle depth or block frequency info.
   llvm::stable_sort(
       AllSuccs, [&](const MachineBasicBlock *L, const MachineBasicBlock *R) {
@@ -1406,6 +1429,37 @@ MachineSinking::GetAllSortedSuccessors(MachineInstr &MI, MachineBasicBlock *MBB,
   auto it = AllSuccessors.insert(std::make_pair(MBB, AllSuccs));
 
   return it.first->second;
+}
+
+MachineBasicBlock *
+MachineSinking::getPostdominatedTarget(MachineBasicBlock *MBB) const {
+  if (!SinkInstsIntoPostdominator)
+    return nullptr;
+
+  auto *Node = PDT->getNode(MBB);
+  if (!Node)
+    return nullptr;
+
+  unsigned Depth = CI->getCycleDepth(MBB);
+  for (Node = Node->getIDom(); Node; Node = Node->getIDom()) {
+    MachineBasicBlock *P = Node->getBlock();
+    if (!P)
+      continue;
+    if (CI->getCycleDepth(P) <= Depth) {
+      if (!MBB->isSuccessor(P))
+        return P;
+      // Sinking into a block's own successor buys nothing, unless we can
+      // legally sink past an instruction with a side effect (e.g. a
+      // discard/kill).
+      if (MBB->succ_size() == 1) {
+        for (const MachineInstr &MI : *MBB)
+          if (TII->hasNoMemorySideEffects(MI))
+            return P;
+      }
+      return nullptr;
+    }
+  }
+  return nullptr;
 }
 
 /// FindSuccToSinkTo - Find a successor to sink this instruction to.
@@ -1435,7 +1489,7 @@ MachineSinking::FindSuccToSinkTo(MachineInstr &MI, MachineBasicBlock *MBB,
         // and we can freely move its uses. Alternatively, if it's allocatable,
         // it could get allocated to something with a def during allocation.
         if (!MRI->isConstantPhysReg(Reg) &&
-            !TII->isIgnorableUse(MI, MI.getOperandNo(&MO)))
+            !TII->isSinkableUse(MI, MI.getOperandNo(&MO)))
           return nullptr;
       } else if (!MO.isDead()) {
         // A def that isn't dead. We can't move it.
@@ -1506,6 +1560,9 @@ MachineSinking::FindSuccToSinkTo(MachineInstr &MI, MachineBasicBlock *MBB,
     return nullptr;
 
   if (SuccToSinkTo && !TII->isSafeToSink(MI, SuccToSinkTo, CI))
+    return nullptr;
+
+  if (SuccToSinkTo && !TII->isProfitableToSink(MI, SuccToSinkTo, DT))
     return nullptr;
 
   return SuccToSinkTo;
@@ -1716,7 +1773,8 @@ bool MachineSinking::hasStoreBetween(MachineBasicBlock *From,
       for (MachineInstr &I : *BB) {
         // Treat as alias conservatively for a call or an ordered memory
         // operation.
-        if (I.isCall() || I.hasOrderedMemoryRef()) {
+        if (I.isCall() ||
+            (I.hasOrderedMemoryRef() && !TII->hasNoMemorySideEffects(I))) {
           for (auto *DomBB : HandledDomBlocks) {
             if (DomBB != BB && DT->dominates(DomBB, BB))
               HasStoreCache[std::make_pair(DomBB, To)] = true;
@@ -1849,8 +1907,12 @@ bool MachineSinking::SinkInstruction(MachineInstr &MI, bool &SawStore,
     return false;
 
   // Check if it's safe to move the instruction.
-  if (!MI.isSafeToMove(SawStore))
+  bool PrevSawStore = SawStore;
+  if (!MI.isSafeToMove(SawStore)) {
+    if (TII->hasNoMemorySideEffects(MI))
+      SawStore = PrevSawStore;
     return false;
+  }
 
   // Convergent operations may not be made control-dependent on additional
   // values.
@@ -1947,6 +2009,12 @@ bool MachineSinking::SinkInstruction(MachineInstr &MI, bool &SawStore,
       LLVM_DEBUG(dbgs() << " *** PUNTING: Not legal or profitable to "
                            "break critical edge\n");
     // The instruction will not be sunk this time.
+    return false;
+  }
+
+  if (MI.mayLoad() && !ParentBlock->isSuccessor(SuccToSinkTo) &&
+      hasStoreBetween(ParentBlock, SuccToSinkTo, MI)) {
+    LLVM_DEBUG(dbgs() << " *** Not sinking: store between source and sink\n");
     return false;
   }
 

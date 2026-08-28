@@ -73,12 +73,12 @@ define amdgpu_ps void @vcc_implicit_def(float %arg13, float %arg14) {
 ; SI-LABEL: vcc_implicit_def:
 ; SI:       ; %bb.0:
 ; SI-NEXT:    v_cmp_nle_f32_e32 vcc, 0, v1
-; SI-NEXT:    v_cmp_gt_f32_e64 s[0:1], 0, v0
 ; SI-NEXT:    s_andn2_b64 exec, exec, vcc
 ; SI-NEXT:    s_cbranch_scc0 .LBB1_2
 ; SI-NEXT:  ; %bb.1:
 ; SI-NEXT:    s_andn2_b64 exec, exec, vcc
-; SI-NEXT:    v_cndmask_b32_e64 v0, 0, 1.0, s[0:1]
+; SI-NEXT:    v_cmp_gt_f32_e32 vcc, 0, v0
+; SI-NEXT:    v_cndmask_b32_e64 v0, 0, 1.0, vcc
 ; SI-NEXT:    exp mrt1, v0, v0, v0, v0 done vm
 ; SI-NEXT:    s_mov_b32 m0, 0
 ; SI-NEXT:    s_nop 0
@@ -92,14 +92,14 @@ define amdgpu_ps void @vcc_implicit_def(float %arg13, float %arg14) {
 ; GFX10-LABEL: vcc_implicit_def:
 ; GFX10:       ; %bb.0:
 ; GFX10-NEXT:    v_cmp_nle_f32_e32 vcc, 0, v1
-; GFX10-NEXT:    v_cmp_gt_f32_e64 s[0:1], 0, v0
 ; GFX10-NEXT:    s_andn2_b64 exec, exec, vcc
 ; GFX10-NEXT:    s_cbranch_scc0 .LBB1_2
 ; GFX10-NEXT:  ; %bb.1:
 ; GFX10-NEXT:    s_andn2_b64 exec, exec, vcc
-; GFX10-NEXT:    v_cndmask_b32_e64 v0, 0, 1.0, s[0:1]
+; GFX10-NEXT:    v_cmp_gt_f32_e32 vcc, 0, v0
 ; GFX10-NEXT:    s_mov_b32 m0, 0
 ; GFX10-NEXT:    s_sendmsg sendmsg(MSG_GS_DONE, GS_OP_NOP)
+; GFX10-NEXT:    v_cndmask_b32_e64 v0, 0, 1.0, vcc
 ; GFX10-NEXT:    exp mrt1, v0, v0, v0, v0 done vm
 ; GFX10-NEXT:    s_endpgm
 ; GFX10-NEXT:  .LBB1_2:
@@ -110,14 +110,14 @@ define amdgpu_ps void @vcc_implicit_def(float %arg13, float %arg14) {
 ; GFX11-LABEL: vcc_implicit_def:
 ; GFX11:       ; %bb.0:
 ; GFX11-NEXT:    v_cmp_nle_f32_e32 vcc, 0, v1
-; GFX11-NEXT:    v_cmp_gt_f32_e64 s[0:1], 0, v0
 ; GFX11-NEXT:    s_and_not1_b64 exec, exec, vcc
 ; GFX11-NEXT:    s_cbranch_scc0 .LBB1_2
 ; GFX11-NEXT:  ; %bb.1:
 ; GFX11-NEXT:    s_and_not1_b64 exec, exec, vcc
-; GFX11-NEXT:    v_cndmask_b32_e64 v0, 0, 1.0, s[0:1]
+; GFX11-NEXT:    v_cmp_gt_f32_e32 vcc, 0, v0
 ; GFX11-NEXT:    s_mov_b32 m0, 0
 ; GFX11-NEXT:    s_sendmsg sendmsg(MSG_DEALLOC_VGPRS)
+; GFX11-NEXT:    v_cndmask_b32_e64 v0, 0, 1.0, vcc
 ; GFX11-NEXT:    exp mrt1, v0, v0, v0, v0 done
 ; GFX11-NEXT:    s_endpgm
 ; GFX11-NEXT:  .LBB1_2:

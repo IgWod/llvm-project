@@ -520,19 +520,19 @@ define amdgpu_kernel void @gws_barrier_wait_before(i32 %val, ptr addrspace(1) %p
 define amdgpu_kernel void @gws_barrier_wait_after(i32 %val, ptr addrspace(1) %ptr) #0 {
 ; GFX6-SDAG-LABEL: gws_barrier_wait_after:
 ; GFX6-SDAG:  ; %bb.0:
-; GFX6-SDAG:    s_mov_b32 s3, 0x100f000
-; GFX6-SDAG:    s_mov_b32 s2, -1
 ; GFX6-SDAG:    s_mov_b32 m0, 0
 ; GFX6-SDAG:    s_waitcnt lgkmcnt(0)
-; GFX6-SDAG:    v_mov_b32_e32 v0, s4
+; GFX6-SDAG:    v_mov_b32_e32 v0, s2
 ; GFX6-SDAG:  .LBB9_1: ; =>This Inner Loop Header: Depth=1
 ; GFX6-SDAG:    s_setreg_imm32_b32 hwreg(HW_REG_TRAPSTS, 8, 1), 0
 ; GFX6-SDAG:    ds_gws_barrier v0 offset:7 gds
 ; GFX6-SDAG:    s_waitcnt vmcnt(0) expcnt(0) lgkmcnt(0)
-; GFX6-SDAG:    s_getreg_b32 s4, hwreg(HW_REG_TRAPSTS, 8, 1)
-; GFX6-SDAG:    s_cmp_lg_u32 s4, 0
+; GFX6-SDAG:    s_getreg_b32 s2, hwreg(HW_REG_TRAPSTS, 8, 1)
+; GFX6-SDAG:    s_cmp_lg_u32 s2, 0
 ; GFX6-SDAG:    s_cbranch_scc1 .LBB9_1
 ; GFX6-SDAG:  ; %bb.2:
+; GFX6-SDAG:    s_mov_b32 s3, 0x100f000
+; GFX6-SDAG:    s_mov_b32 s2, -1
 ; GFX6-SDAG:    s_waitcnt vmcnt(0)
 ; GFX6-SDAG:    s_endpgm
 ;
@@ -677,19 +677,19 @@ define amdgpu_kernel void @gws_barrier_fence_before(i32 %val, ptr addrspace(1) %
 define amdgpu_kernel void @gws_barrier_fence_after(i32 %val, ptr addrspace(1) %ptr) #0 {
 ; GFX6-SDAG-LABEL: gws_barrier_fence_after:
 ; GFX6-SDAG:  ; %bb.0:
-; GFX6-SDAG:    s_mov_b32 s3, 0x100f000
-; GFX6-SDAG:    s_mov_b32 s2, -1
 ; GFX6-SDAG:    s_mov_b32 m0, 0
 ; GFX6-SDAG:    s_waitcnt lgkmcnt(0)
-; GFX6-SDAG:    v_mov_b32_e32 v0, s4
+; GFX6-SDAG:    v_mov_b32_e32 v0, s2
 ; GFX6-SDAG:  .LBB11_1: ; =>This Inner Loop Header: Depth=1
 ; GFX6-SDAG:    s_setreg_imm32_b32 hwreg(HW_REG_TRAPSTS, 8, 1), 0
 ; GFX6-SDAG:    ds_gws_barrier v0 offset:7 gds
 ; GFX6-SDAG:    s_waitcnt vmcnt(0) expcnt(0) lgkmcnt(0)
-; GFX6-SDAG:    s_getreg_b32 s4, hwreg(HW_REG_TRAPSTS, 8, 1)
-; GFX6-SDAG:    s_cmp_lg_u32 s4, 0
+; GFX6-SDAG:    s_getreg_b32 s2, hwreg(HW_REG_TRAPSTS, 8, 1)
+; GFX6-SDAG:    s_cmp_lg_u32 s2, 0
 ; GFX6-SDAG:    s_cbranch_scc1 .LBB11_1
 ; GFX6-SDAG:  ; %bb.2:
+; GFX6-SDAG:    s_mov_b32 s3, 0x100f000
+; GFX6-SDAG:    s_mov_b32 s2, -1
 ; GFX6-SDAG:    s_waitcnt vmcnt(0)
 ; GFX6-SDAG:    s_endpgm
 ;

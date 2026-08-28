@@ -9207,11 +9207,8 @@ define amdgpu_cs void @insert_or_disj_index(ptr addrspace(1) %out, ptr addrspace
 ; GENERIC:       ; %bb.0: ; %entry
 ; GENERIC-NEXT:    v_mov_b32_e32 v2, s4
 ; GENERIC-NEXT:    buffer_load_dword v2, v2, s[0:3], 0 offen
-; GENERIC-NEXT:    s_mov_b32 s2, 0
 ; GENERIC-NEXT:    v_mov_b32_e32 v5, 0
-; GENERIC-NEXT:    s_mov_b32 s3, 0xf000
-; GENERIC-NEXT:    s_mov_b32 s0, s2
-; GENERIC-NEXT:    s_mov_b32 s1, s2
+; GENERIC-NEXT:    s_mov_b32 s2, 0
 ; GENERIC-NEXT:    v_mov_b32_e32 v6, v5
 ; GENERIC-NEXT:    v_mov_b32_e32 v7, v5
 ; GENERIC-NEXT:    v_mov_b32_e32 v8, v5
@@ -9227,18 +9224,21 @@ define amdgpu_cs void @insert_or_disj_index(ptr addrspace(1) %out, ptr addrspace
 ; GENERIC-NEXT:    v_mov_b32_e32 v18, v5
 ; GENERIC-NEXT:    v_mov_b32_e32 v19, v5
 ; GENERIC-NEXT:    v_mov_b32_e32 v20, v5
-; GENERIC-NEXT:    s_mov_b64 s[4:5], exec
+; GENERIC-NEXT:    s_mov_b64 s[0:1], exec
 ; GENERIC-NEXT:  .LBB27_1: ; =>This Inner Loop Header: Depth=1
 ; GENERIC-NEXT:    s_waitcnt vmcnt(0)
-; GENERIC-NEXT:    v_readfirstlane_b32 s6, v2
-; GENERIC-NEXT:    v_cmp_eq_u32_e32 vcc, s6, v2
+; GENERIC-NEXT:    v_readfirstlane_b32 s3, v2
+; GENERIC-NEXT:    v_cmp_eq_u32_e32 vcc, s3, v2
 ; GENERIC-NEXT:    s_and_saveexec_b64 vcc, vcc
-; GENERIC-NEXT:    s_mov_b32 m0, s6
+; GENERIC-NEXT:    s_mov_b32 m0, s3
 ; GENERIC-NEXT:    v_movreld_b32_e32 v6, v4
 ; GENERIC-NEXT:    s_xor_b64 exec, exec, vcc
 ; GENERIC-NEXT:    s_cbranch_execnz .LBB27_1
 ; GENERIC-NEXT:  ; %bb.2:
-; GENERIC-NEXT:    s_mov_b64 exec, s[4:5]
+; GENERIC-NEXT:    s_mov_b64 exec, s[0:1]
+; GENERIC-NEXT:    s_mov_b32 s3, 0xf000
+; GENERIC-NEXT:    s_mov_b32 s0, s2
+; GENERIC-NEXT:    s_mov_b32 s1, s2
 ; GENERIC-NEXT:    buffer_store_dwordx4 v[17:20], v[0:1], s[0:3], 0 addr64 offset:48
 ; GENERIC-NEXT:    buffer_store_dwordx4 v[13:16], v[0:1], s[0:3], 0 addr64 offset:32
 ; GENERIC-NEXT:    buffer_store_dwordx4 v[9:12], v[0:1], s[0:3], 0 addr64 offset:16
@@ -9535,11 +9535,8 @@ define amdgpu_cs void @insert_or_disj_index(ptr addrspace(1) %out, ptr addrspace
 ; SI-MOVREL:       ; %bb.0: ; %entry
 ; SI-MOVREL-NEXT:    v_mov_b32_e32 v2, s4
 ; SI-MOVREL-NEXT:    buffer_load_dword v2, v2, s[0:3], 0 offen
-; SI-MOVREL-NEXT:    s_mov_b32 s2, 0
 ; SI-MOVREL-NEXT:    v_mov_b32_e32 v5, 0
-; SI-MOVREL-NEXT:    s_mov_b32 s3, 0xf000
-; SI-MOVREL-NEXT:    s_mov_b32 s0, s2
-; SI-MOVREL-NEXT:    s_mov_b32 s1, s2
+; SI-MOVREL-NEXT:    s_mov_b32 s2, 0
 ; SI-MOVREL-NEXT:    v_mov_b32_e32 v6, v5
 ; SI-MOVREL-NEXT:    v_mov_b32_e32 v7, v5
 ; SI-MOVREL-NEXT:    v_mov_b32_e32 v8, v5
@@ -9555,18 +9552,21 @@ define amdgpu_cs void @insert_or_disj_index(ptr addrspace(1) %out, ptr addrspace
 ; SI-MOVREL-NEXT:    v_mov_b32_e32 v18, v5
 ; SI-MOVREL-NEXT:    v_mov_b32_e32 v19, v5
 ; SI-MOVREL-NEXT:    v_mov_b32_e32 v20, v5
-; SI-MOVREL-NEXT:    s_mov_b64 s[4:5], exec
+; SI-MOVREL-NEXT:    s_mov_b64 s[0:1], exec
 ; SI-MOVREL-NEXT:  .LBB27_1: ; =>This Inner Loop Header: Depth=1
 ; SI-MOVREL-NEXT:    s_waitcnt vmcnt(0)
-; SI-MOVREL-NEXT:    v_readfirstlane_b32 s6, v2
-; SI-MOVREL-NEXT:    v_cmp_eq_u32_e32 vcc, s6, v2
+; SI-MOVREL-NEXT:    v_readfirstlane_b32 s3, v2
+; SI-MOVREL-NEXT:    v_cmp_eq_u32_e32 vcc, s3, v2
 ; SI-MOVREL-NEXT:    s_and_saveexec_b64 vcc, vcc
-; SI-MOVREL-NEXT:    s_mov_b32 m0, s6
+; SI-MOVREL-NEXT:    s_mov_b32 m0, s3
 ; SI-MOVREL-NEXT:    v_movreld_b32_e32 v6, v4
 ; SI-MOVREL-NEXT:    s_xor_b64 exec, exec, vcc
 ; SI-MOVREL-NEXT:    s_cbranch_execnz .LBB27_1
 ; SI-MOVREL-NEXT:  ; %bb.2:
-; SI-MOVREL-NEXT:    s_mov_b64 exec, s[4:5]
+; SI-MOVREL-NEXT:    s_mov_b64 exec, s[0:1]
+; SI-MOVREL-NEXT:    s_mov_b32 s3, 0xf000
+; SI-MOVREL-NEXT:    s_mov_b32 s0, s2
+; SI-MOVREL-NEXT:    s_mov_b32 s1, s2
 ; SI-MOVREL-NEXT:    buffer_store_dwordx4 v[17:20], v[0:1], s[0:3], 0 addr64 offset:48
 ; SI-MOVREL-NEXT:    buffer_store_dwordx4 v[13:16], v[0:1], s[0:3], 0 addr64 offset:32
 ; SI-MOVREL-NEXT:    buffer_store_dwordx4 v[9:12], v[0:1], s[0:3], 0 addr64 offset:16
