@@ -360,6 +360,58 @@ bool SIInstrInfo::isIgnorableUse(const MachineInstr &MI, unsigned OpIdx) const {
          isVALU(MI, /*AllowLDSDMA=*/true) && !resultDependsOnExec(MI);
 }
 
+/// Return true if EXEC at the point \p MI would be sunk to in \p SuccToSinkTo
+/// is known to be the same as EXEC at \p MI.
+///
+/// TODO: Also allow narrower EXEC if safe.
+static bool execIsSameAtSink(const MachineInstr &MI,
+                             MachineBasicBlock *SuccToSinkTo,
+                             const SIRegisterInfo &RI) {
+  if (MI.getMF()->getRegInfo().isConstantPhysReg(AMDGPU::EXEC))
+    return true;
+
+  const MachineBasicBlock *MBB = MI.getParent();
+
+  // Bound the work done for a single sinking candidate. Mirrors the threshold
+  // in `hasStoreBetween`.
+  constexpr unsigned MaxScannedInstrs = 2000;
+  unsigned Budget = MaxScannedInstrs;
+
+  // Return false if EXEC is modified or if the scan budget runs out.
+  auto ExecIsUnchangedIn = [&](MachineBasicBlock::const_iterator Begin,
+                               MachineBasicBlock::const_iterator End) {
+    for (auto I = Begin; I != End; ++I)
+      if (!Budget-- || I->modifiesRegister(AMDGPU::EXEC, &RI))
+        return false;
+    return true;
+  };
+
+  if (!ExecIsUnchangedIn(std::next(MI.getIterator()), MBB->end()))
+    return false;
+
+  MachineBasicBlock::iterator InsertPos =
+      SuccToSinkTo->SkipPHIsAndLabels(SuccToSinkTo->begin());
+  if (!ExecIsUnchangedIn(SuccToSinkTo->begin(), InsertPos))
+    return false;
+
+  // Traverse the blocks reachable before SuccToSinkTo looking for any EXEC
+  // modification.
+  SmallPtrSet<const MachineBasicBlock *, 8> Visited;
+  SmallVector<const MachineBasicBlock *, 8> Worklist(MBB->succ_begin(),
+                                                     MBB->succ_end());
+  while (!Worklist.empty()) {
+    const MachineBasicBlock *BB = Worklist.pop_back_val();
+    if (!Visited.insert(BB).second)
+      continue;
+    if (BB == SuccToSinkTo)
+      continue;
+    if (!ExecIsUnchangedIn(BB->begin(), BB->end()))
+      return false;
+    Worklist.append(BB->succ_begin(), BB->succ_end());
+  }
+  return true;
+}
+
 bool SIInstrInfo::isSafeToSink(MachineInstr &MI,
                                MachineBasicBlock *SuccToSinkTo,
                                MachineCycleInfo *CI) const {
@@ -372,7 +424,7 @@ bool SIInstrInfo::isSafeToSink(MachineInstr &MI,
   // TODO: `resultDependsOnExec` check is done outside `isSinkableUse`, so
   // eventually we can allow sinking of EXEC dependent instruction if we can
   // prove EXEC is the same at the sinking point.
-  if (resultDependsOnExec(MI) && !MRI.isConstantPhysReg(AMDGPU::EXEC))
+  if (resultDependsOnExec(MI) && !execIsSameAtSink(MI, SuccToSinkTo, RI))
     return false;
 
   // Check if sinking of MI would create temporal divergent use.
