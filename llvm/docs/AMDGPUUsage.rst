@@ -2834,6 +2834,11 @@ The AMDGPU backend supports the following LLVM IR attributes.
 
      "amdgpu-promote-alloca-to-vector-max-regs"       Maximum vector size (in 32b registers) to create when promoting alloca.
 
+     "amdgpu-promote-alloca-divergent-max-regs"       Maximum vector size (in 32b registers) to create when promoting alloca
+                                                      that is dynamically indexed by a divergent value. A divergent
+                                                      dynamic index lowers to a chain of selects, one per register, so a
+                                                      tighter limit applies to avoid long chains.
+
      "amdgpu-promote-alloca-to-vector-vgpr-ratio"     Ratio of VGPRs to budget for promoting alloca to vectors.
 
      "amdgpu-dynamic-vgpr-block-size"                 Represents the size of a VGPR block in the "Dynamic VGPR" hardware mode,
