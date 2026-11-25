@@ -1424,7 +1424,8 @@ bool RewriteMFMAFormStage::initGCNSchedStage() {
 }
 
 bool UnclusteredHighRPStage::initGCNSchedStage() {
-  if (!ST.getCLOpts().unclustered_high_rp_reschedule)
+  if (!ST.getCLOpts().unclustered_high_rp_reschedule ||
+      MF.getTarget().getOptLevel() == CodeGenOptLevel::Less)
     return false;
 
   if (!GCNSchedStage::initGCNSchedStage())
@@ -1457,7 +1458,8 @@ bool UnclusteredHighRPStage::initGCNSchedStage() {
 }
 
 bool ClusteredLowOccStage::initGCNSchedStage() {
-  if (!ST.getCLOpts().clustered_low_occupancy_reschedule)
+  if (!ST.getCLOpts().clustered_low_occupancy_reschedule ||
+      MF.getTarget().getOptLevel() == CodeGenOptLevel::Less)
     return false;
 
   if (!GCNSchedStage::initGCNSchedStage())

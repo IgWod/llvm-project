@@ -1290,6 +1290,10 @@ public:
   GCNPassConfig(TargetMachine &TM, PassManagerBase &PM)
       : AMDGPUPassConfig(TM, PM) {
     substitutePass(&PostRASchedulerID, &PostMachineSchedulerID);
+    if (TM.getOptLevel() == CodeGenOptLevel::Less) {
+      disablePass(&PostRASchedulerID);
+      disablePass(&MachineCSELegacyID);
+    }
   }
 
   bool addPreISel() override;
@@ -2173,6 +2177,8 @@ AMDGPUCodeGenPassBuilder::AMDGPUCodeGenPassBuilder(
   // Garbage collection is not supported.
   disablePass<StackMapLivenessPass, FuncletLayoutPass, PatchableFunctionPass,
               ShadowStackGCLoweringPass, GCLoweringPass>();
+  if (TM.getOptLevel() == CodeGenOptLevel::Less)
+    disablePass<MachineCSEPass, PostMachineSchedulerPass>();
 
   // If enabled, use the SSA machine scheduler instead of the regular machine
   // scheduler.
